@@ -1,0 +1,192 @@
+import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
+
+import '../config/routes.dart';
+import 'api.dart';
+
+class NotificationService {
+  static final FlutterLocalNotificationsPlugin _localNotifications =
+  FlutterLocalNotificationsPlugin();
+  static bool _listenerRegistered = false;
+  static String? _lastSentToken;
+
+  Future<void> init() async {
+    await _initLocalNotifications();
+    final settings =
+    await FirebaseMessaging.instance.requestPermission(provisional: true);
+
+    print('Status: ${settings.authorizationStatus}');
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional) {
+      await _postToken();
+    }
+
+    _registerTokenRefreshListener();
+    _registerForegroundListener();
+    _registerNotificationTapListener();
+    await _handleInitialMessage();
+  }
+
+  Future<void> _initLocalNotifications() async {
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    final iosSettings = DarwinInitializationSettings();
+    final initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+    );
+
+    await _localNotifications.initialize(
+      settings: initSettings,
+      // dipanggil saat notifikasi lokal (yang muncul waktu app foreground) di-tap
+      onDidReceiveNotificationResponse: (response) {
+        final type = response.payload;
+        if (type != null && type.isNotEmpty) {
+          _navigateByType(type);
+        }
+      },
+    );
+
+    const channel = AndroidNotificationChannel(
+      'high_importance_channel',
+      'High Importance Notifications',
+      importance: Importance.high,
+    );
+    final androidPlugin = _localNotifications
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.createNotificationChannel(channel);
+  }
+
+  // App SEDANG DIBUKA saat notif masuk -> tampilkan manual + gambar
+  void _registerForegroundListener() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      final notification = message.notification;
+      if (notification == null) return;
+
+      final imageUrl =
+          notification.android?.imageUrl ?? notification.apple?.imageUrl;
+      final localImagePath =
+      imageUrl != null ? await _downloadImage(imageUrl) : null;
+
+      await _localNotifications.show(
+        id: notification.hashCode,
+        title: notification.title,
+        body: notification.body,
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            'high_importance_channel',
+            'High Importance Notifications',
+            importance: Importance.high,
+            priority: Priority.high,
+            styleInformation: localImagePath != null
+                ? BigPictureStyleInformation(
+              FilePathAndroidBitmap(localImagePath),
+              largeIcon: FilePathAndroidBitmap(localImagePath),
+            )
+                : null,
+          ),
+          iOS: DarwinNotificationDetails(
+            attachments: localImagePath != null
+                ? [DarwinNotificationAttachment(localImagePath)]
+                : null,
+          ),
+        ),
+        payload: message.data['type'] as String?,
+      );
+    });
+  }
+
+  // App di BACKGROUND, user tap notifikasi dari tray
+  void _registerNotificationTapListener() {
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      final type = message.data['type'] as String?;
+      if (type != null) _navigateByType(type);
+    });
+  }
+
+  // App TERMINATED (cold start) karena user tap notifikasi
+  Future<void> _handleInitialMessage() async {
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    final type = initialMessage?.data['type'] as String?;
+    if (type != null) _navigateByType(type);
+  }
+
+  void _navigateByType(String type) {
+    final context = rootNavigatorKey.currentContext;
+    if (context == null) return;
+
+    switch (type) {
+      case 'announcement':
+        context.push(AppRoutes.announcement);
+        break;
+      case 'leave_submitted':
+        context.push(AppRoutes.leaveApproval);
+        break;
+      case 'leave_approved':
+      case 'leave_rejected':
+        context.push(AppRoutes.leave);
+        break;
+    }
+  }
+
+  Future<String?> _downloadImage(String url) async {
+    try {
+      final dir = await getTemporaryDirectory();
+      final filePath =
+          '${dir.path}/notif_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      await Dio().download(url, filePath);
+      return filePath;
+    } catch (e) {
+      print('Gagal download gambar notifikasi: $e');
+      return null;
+    }
+  }
+
+  static Future<void> _postToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token == null || token == _lastSentToken) return;
+
+      await DioClient.dio.put('/notification/update-token', data: {
+        'token': token,
+      });
+      _lastSentToken = token;
+    } on DioException catch (e) {
+      print("error update token: $e");
+    }
+  }
+
+  static void _registerTokenRefreshListener() {
+    if (_listenerRegistered) return;
+    _listenerRegistered = true;
+
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+      try {
+        await DioClient.dio.put('/notification/update-token', data: {
+          'token': newToken,
+        });
+        _lastSentToken = newToken;
+      } catch (e) {
+        print("Gagal update token: $e");
+      }
+    });
+  }
+
+  static Future<void> deleteToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await DioClient.dio.delete('/notification/delete-token', data: {
+          'token': token,
+        });
+      }
+      await FirebaseMessaging.instance.deleteToken();
+      _lastSentToken = null;
+    } on DioException catch (e) {
+      print("error delete token: $e");
+    }
+  }
+}

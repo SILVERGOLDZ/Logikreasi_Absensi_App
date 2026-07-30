@@ -1,0 +1,272 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../../controllers/leave_controller.dart';
+import '../../widgets/app_scaffold.dart';
+import '../../widgets/approval_picker_field.dart';
+
+class LeaveFormScreen extends StatelessWidget {
+  const LeaveFormScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => LeaveController()..init(),
+      child: const _LeaveFormBody(),
+    );
+  }
+}
+
+class _LeaveFormBody extends StatefulWidget {
+  const _LeaveFormBody();
+
+  @override
+  State<_LeaveFormBody> createState() => _LeaveFormBodyState();
+}
+
+class _LeaveFormBodyState extends State<_LeaveFormBody> {
+  final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  final _reasonController = TextEditingController();
+  DateTimeRange? _selectedRange;
+  String _type = 'CUTI';
+  List<int> _selectedApproverIds = [];
+  List<File> _attachments = [];
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDateRange() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime.now().subtract(const Duration(days: 1)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialDateRange: _selectedRange,
+    );
+    if (picked != null) setState(() => _selectedRange = picked);
+  }
+
+  Future<void> _pickAttachment() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        allowMultiple: true,
+      );
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          _attachments.addAll(
+            result.files
+                .where((f) => f.path != null)
+                .map((f) => File(f.path!)),
+          );
+        });
+      }
+    } catch (e) {
+      debugPrint('pickFiles error: $e');
+    }
+  }
+
+  Future<void> _submit(LeaveController controller) async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedRange == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih tanggal cuti')));
+      return;
+    }
+    if (_selectedApproverIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih minimal 1 approver')));
+      return;
+    }
+
+    final success = await controller.submitLeave(
+      title: _titleController.text.trim(),
+      startDate: DateFormat('yyyy-MM-dd').format(_selectedRange!.start),
+      endDate: DateFormat('yyyy-MM-dd').format(_selectedRange!.end),
+      type: _type,
+      reason: _reasonController.text.trim(),
+      approverIds: _selectedApproverIds,
+      attachments: _attachments,
+    );
+
+    if (!mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pengajuan berhasil dikirim')));
+      context.pop(true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(controller.errorMessage ?? 'Gagal mengajukan')));
+    }
+  }
+
+  Widget _buildAttachmentList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Lampiran (PDF, opsional)', style: TextStyle(fontWeight: FontWeight.bold)),
+            TextButton.icon(
+              onPressed: _pickAttachment,
+              icon: const Icon(Icons.attach_file, size: 18),
+              label: const Text('Tambah file'),
+            ),
+          ],
+        ),
+        if (_attachments.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              'Belum ada file dipilih',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+            ),
+          )
+        else
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              children: _attachments.asMap().entries.map((entry) {
+                final index = entry.key;
+                final file = entry.value;
+                final isLast = index == _attachments.length - 1;
+                final sizeKb = (file.lengthSync() / 1024).toStringAsFixed(0);
+
+                return Container(
+                  decoration: BoxDecoration(
+                    border: isLast
+                        ? null
+                        : Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                  ),
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                    leading: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(Icons.picture_as_pdf, color: Colors.red.shade400, size: 20),
+                    ),
+                    title: Text(
+                      file.path.split('/').last,
+                      style: const TextStyle(fontSize: 13),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text('$sizeKb KB', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () => setState(() => _attachments.removeAt(index)),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.watch<LeaveController>();
+
+    return AppScaffold(
+      appBar: AppBar(title: const Text('Ajukan Cuti/Izin')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Jenis Pengajuan', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: 'CUTI', label: Text('Cuti')),
+                  ButtonSegment(value: 'IZIN', label: Text('Izin')),
+                ],
+                selected: {_type},
+                onSelectionChanged: (s) => setState(() => _type = s.first),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  labelText: 'Judul',
+                  hintText: 'Contoh: Cuti tahunan keluarga',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Judul wajib diisi' : null,
+              ),
+              const SizedBox(height: 16),
+              InkWell(
+                onTap: _pickDateRange,
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: 'Tanggal',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    suffixIcon: const Icon(Icons.calendar_today),
+                  ),
+                  child: Text(
+                    _selectedRange == null
+                        ? 'Pilih tanggal (bisa rentang)'
+                        : '${DateFormat('dd MMM yyyy').format(_selectedRange!.start)} - ${DateFormat('dd MMM yyyy').format(_selectedRange!.end)}',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _reasonController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Alasan',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Alasan wajib diisi' : null,
+              ),
+              const SizedBox(height: 16),
+              _buildAttachmentList(),
+              const SizedBox(height: 16),
+              controller.isLoadingApprovers
+                  ? const Center(child: CircularProgressIndicator())
+                  : ApproverPickerField(
+                approvers: controller.approvers,
+                selectedIds: _selectedApproverIds,
+                onChanged: (ids) => setState(() => _selectedApproverIds = ids),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: controller.isSubmitting ? null : () => _submit(controller),
+                  child: controller.isSubmitting
+                      ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Text('Kirim Pengajuan'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

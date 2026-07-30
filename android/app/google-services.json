@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "346154577484",
+    "project_id": "logikreasi-absensi",
+    "storage_bucket": "logikreasi-absensi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:346154577484:android:e48bc80de4436bcb024ee9",
+        "android_client_info": {
+          "package_name": "com.logikreasi.absensi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRKVxC53l4L0O4byV-YYVYpuuzGmOm3ZI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
