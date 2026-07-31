@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../widgets/app_scaffold.dart';
+import '../../config/attachment_categories.dart';
 
 class DownloadedAttachmentsScreen extends StatefulWidget {
   const DownloadedAttachmentsScreen({super.key});
@@ -10,7 +11,48 @@ class DownloadedAttachmentsScreen extends StatefulWidget {
   State<DownloadedAttachmentsScreen> createState() => _DownloadedAttachmentsScreenState();
 }
 
-class _DownloadedAttachmentsScreenState extends State<DownloadedAttachmentsScreen> {
+class _DownloadedAttachmentsScreenState extends State<DownloadedAttachmentsScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tab = TabController(length: kAttachmentCategories.length, vsync: this);
+
+  @override
+  void dispose() {
+    _tab.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppScaffold(
+      appBar: AppBar(
+        title: const Text('Lampiran tersimpan'),
+        bottom: kAttachmentCategories.length > 1
+            ? TabBar(
+          controller: _tab,
+          isScrollable: true,
+          tabs: kAttachmentCategories.map((c) => Tab(text: c.label)).toList(),
+        )
+            : null,
+      ),
+      body: TabBarView(
+        controller: _tab,
+        children: kAttachmentCategories
+            .map((category) => _CategoryAttachmentList(category: category))
+            .toList(),
+      ),
+    );
+  }
+}
+class _CategoryAttachmentList extends StatefulWidget {
+  const _CategoryAttachmentList({required this.category});
+
+  final AttachmentCategory category;
+
+  @override
+  State<_CategoryAttachmentList> createState() => _CategoryAttachmentListState();
+}
+
+class _CategoryAttachmentListState extends State<_CategoryAttachmentList> {
   bool _loading = true;
   List<File> _files = [];
   int _totalBytes = 0;
@@ -23,7 +65,7 @@ class _DownloadedAttachmentsScreenState extends State<DownloadedAttachmentsScree
 
   Future<Directory> _attachmentDir() async {
     final dir = await getApplicationDocumentsDirectory();
-    return Directory('${dir.path}/leave_attachments');
+    return Directory('${dir.path}/${widget.category.folderName}');
   }
 
   Future<void> _loadFiles() async {
@@ -91,7 +133,7 @@ class _DownloadedAttachmentsScreenState extends State<DownloadedAttachmentsScree
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Hapus semua lampiran?'),
+        title: Text('Hapus semua lampiran ${widget.category.label}?'),
         content: Text('${_files.length} file akan dihapus permanen dari perangkat ini.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
@@ -125,77 +167,78 @@ class _DownloadedAttachmentsScreenState extends State<DownloadedAttachmentsScree
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      appBar: AppBar(
-        title: const Text('Lampiran tersimpan'),
-        actions: [
-          if (_files.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.delete_sweep_outlined),
-              tooltip: 'Hapus semua',
-              onPressed: _confirmDeleteAll,
-            ),
-        ],
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _files.isEmpty
-          ? Center(
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_files.isEmpty) {
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.folder_open, size: 48, color: Colors.grey.shade400),
             const SizedBox(height: 12),
-            Text('Belum ada lampiran tersimpan', style: TextStyle(color: Colors.grey.shade600)),
+            Text('Belum ada lampiran ${widget.category.label.toLowerCase()} tersimpan', style: TextStyle(color: Colors.grey.shade600)),
           ],
         ),
-      )
-          : Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            color: Colors.grey.shade50,
-            child: Text(
-              '${_files.length} file · ${_formatSize(_totalBytes)} total',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
-            ),
-          ),
-          Expanded(
-            child: ListView.separated(
-              padding: EdgeInsets.zero,
-              itemCount: _files.length,
-              separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey.shade200),
-              itemBuilder: (context, index) {
-                final file = _files[index];
-                final sizeLabel = _formatSize(file.lengthSync());
+      );
+    }
 
-                return ListTile(
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(Icons.picture_as_pdf, color: Colors.red.shade400, size: 22),
-                  ),
-                  title: Text(
-                    file.path.split('/').last,
-                    style: const TextStyle(fontSize: 13),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(sizeLabel, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline, size: 20, color: Colors.red),
-                    onPressed: () => _confirmDeleteFile(file),
-                  ),
-                );
-              },
-            ),
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          color: Colors.grey.shade50,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${_files.length} file · ${_formatSize(_totalBytes)} total',
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+              ),
+              TextButton.icon(
+                onPressed: _confirmDeleteAll,
+                icon: const Icon(Icons.delete_sweep_outlined, size: 18, color: Colors.red),
+                label: const Text('Hapus semua', style: TextStyle(color: Colors.red)),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        Expanded(
+          child: ListView.separated(
+            padding: EdgeInsets.zero,
+            itemCount: _files.length,
+            separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey.shade200),
+            itemBuilder: (context, index) {
+              final file = _files[index];
+              final sizeLabel = _formatSize(file.lengthSync());
+
+              return ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.picture_as_pdf, color: Colors.red.shade400, size: 22),
+                ),
+                title: Text(
+                  file.path.split('/').last,
+                  style: const TextStyle(fontSize: 13),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(sizeLabel, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                  onPressed: () => _confirmDeleteFile(file),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
