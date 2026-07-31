@@ -1,3 +1,4 @@
+import 'package:absensi_app/config/text_form_config.dart';
 import 'package:flutter/material.dart';
 
 import 'package:absensi_app/utils/title_case_helper.dart';
@@ -61,6 +62,7 @@ class _CreatePengumumanScreenState extends State<CreatePengumumanScreen> {
             children: [
               TextFormField(
                 controller: _titleController,
+                maxLength: TextFormConfig.title,
                 decoration: const InputDecoration(
                     labelText: "Judul",
                     border: OutlineInputBorder(),
@@ -72,6 +74,7 @@ class _CreatePengumumanScreenState extends State<CreatePengumumanScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _contentController,
+                maxLength: TextFormConfig.largeContent,
                 decoration: const InputDecoration(
                   labelText: "Isi Pengumuman",
                   border: OutlineInputBorder(),

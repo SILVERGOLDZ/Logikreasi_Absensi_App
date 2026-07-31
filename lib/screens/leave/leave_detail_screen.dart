@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:absensi_app/config/text_form_config.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -124,6 +125,7 @@ class _LeaveDetailScreenState extends State<LeaveDetailScreen> {
             const SizedBox(height: 12),
             TextField(
               controller: noteController,
+              maxLength: TextFormConfig.mediumContent,
               decoration: InputDecoration(
                 labelText: 'Catatan (opsional)',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
