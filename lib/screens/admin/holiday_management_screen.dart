@@ -1,3 +1,4 @@
+import 'package:absensi_app/config/text_form_config.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:dio/dio.dart';
@@ -348,6 +349,7 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: _reasonController,
+                maxLength: TextFormConfig.shortTitle,
                 decoration: const InputDecoration(
                   labelText: 'Jenis / Alasan Libur (mis. Cuti Bersama)',
                   border: OutlineInputBorder(),
@@ -362,6 +364,7 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: _titleController,
+                maxLength: TextFormConfig.title,
                 decoration: const InputDecoration(
                   labelText: 'Judul Pengumuman',
                   border: OutlineInputBorder(),
@@ -373,6 +376,7 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _contentController,
+                maxLength: TextFormConfig.largeContent,
                 decoration: const InputDecoration(
                   labelText: 'Isi Pengumuman',
                   border: OutlineInputBorder(),

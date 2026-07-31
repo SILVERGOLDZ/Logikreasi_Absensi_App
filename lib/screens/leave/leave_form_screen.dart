@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:absensi_app/config/text_form_config.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -210,6 +211,7 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _titleController,
+                maxLength: TextFormConfig.title,
                 decoration: InputDecoration(
                   labelText: 'Judul',
                   hintText: 'Contoh: Cuti tahunan keluarga',
@@ -237,6 +239,7 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
               TextFormField(
                 controller: _reasonController,
                 maxLines: 3,
+                maxLength: TextFormConfig.smallContent,
                 decoration: InputDecoration(
                   labelText: 'Alasan',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),

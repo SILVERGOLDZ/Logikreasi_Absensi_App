@@ -6,6 +6,7 @@
 // - field compensationType (bebas diisi user)
 
 import 'dart:io';
+import 'package:absensi_app/config/text_form_config.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -338,6 +339,7 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _titleController,
+                maxLength: TextFormConfig.title,
                 decoration: InputDecoration(
                   labelText: 'Judul',
                   hintText: 'Contoh: Lembur closing laporan bulanan',
@@ -352,6 +354,7 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _compensationController,
+                maxLength: TextFormConfig.title,
                 decoration: InputDecoration(
                   labelText: 'Jenis Kompensasi',
                   hintText: 'Contoh: Uang Rp 150.000 / Libur pengganti 1 hari',
@@ -363,6 +366,7 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
               TextFormField(
                 controller: _reasonController,
                 maxLines: 3,
+                maxLength: TextFormConfig.smallContent,
                 decoration: InputDecoration(
                   labelText: 'Alasan',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
