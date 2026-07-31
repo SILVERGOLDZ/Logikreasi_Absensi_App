@@ -133,7 +133,7 @@ class _MenuGrid extends StatelessWidget {
           childAspectRatio: _aspectRatio(screenWidth),
           children: [
             _MenuItem(icon: Icons.access_time, label: 'Cuti', color: Colors.redAccent, screenWidth: screenWidth, onTap: () => context.push('/leave'),),
-            _MenuItem(icon: Icons.nights_stay_rounded, label: 'Lembur', color: Colors.grey.shade300, screenWidth: screenWidth),
+            _MenuItem(icon: Icons.nights_stay_rounded, label: 'Lembur', color: Colors.black54, screenWidth: screenWidth, onTap: () => context.push('/overtime'),),
             _MenuItem(icon: Icons.home_work, label: 'Perbaikan\nKehadiran', color: Colors.grey.shade300, screenWidth: screenWidth),
             _MenuItem(icon: Icons.people, label: 'Perubahan\nShift', color: Colors.grey.shade300, screenWidth: screenWidth),
             _MenuItem(icon: Icons.access_time, label: 'Kehadiran\nManual', color: Colors.grey.shade300, screenWidth: screenWidth),
@@ -150,11 +150,19 @@ class _MenuGrid extends StatelessWidget {
               _MenuItem(icon: Icons.free_breakfast_rounded, label: 'Tetapkan\nLibur', color: Colors.brown, screenWidth: screenWidth, onTap: () => context.push('/admin/holiday')),
               _MenuItem(
                 icon: Icons.fact_check,
-                label: 'Approve\ncuti',
+                label: 'Approve\nCuti',
                 color: Colors.redAccent,
                 screenWidth: screenWidth,
                 onTap: () => context.push('/leave/approval'),
                 badgeCount: home.pendingLeaveCount,
+              ),
+              _MenuItem(
+                icon: Icons.timelapse_outlined,
+                label: 'Approve\nLembur',
+                color: Colors.black54,
+                screenWidth: screenWidth,
+                onTap: () => context.push('/overtime/approval'),
+                badgeCount: home.pendingOvertimeCount,
               ),
               _MenuItem(
                 icon: Icons.person_add,

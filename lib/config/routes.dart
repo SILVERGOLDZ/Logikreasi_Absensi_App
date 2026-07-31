@@ -1,10 +1,15 @@
+import 'package:absensi_app/screens/admin/overtime_approval_screen.dart';
 import 'package:absensi_app/screens/admin/register_user_screen.dart';
 import 'package:absensi_app/screens/change_password_screen.dart';
 import 'package:absensi_app/screens/home_screen.dart';
 import 'package:absensi_app/screens/mail_screen.dart';
+import 'package:absensi_app/screens/overtime/overtime_detail_screen.dart';
+import 'package:absensi_app/screens/overtime/overtime_form_screen.dart';
+import 'package:absensi_app/screens/overtime/overtime_screen.dart';
 import 'package:absensi_app/screens/settings/downloaded_attachment_screen.dart';
 
 import '../models/leave_model.dart';
+import '../models/overtime_model.dart';
 import '../screens/admin/create_announcement_screen.dart';
 import '../screens/admin/holiday_management_screen.dart';
 import '../screens/admin/leave_approval_screen.dart';
@@ -43,6 +48,11 @@ class AppRoutes {
   static const String leaveApproval = '/leave/approval';
   static const String leaveDetail = '/leave/detail';
   static const String downloaded = '/settings/downloaded';
+
+  static const String overtime = '/overtime';
+  static const String overtimeCreate = '/overtime/create';
+  static const String overtimeApproval = '/overtime/approval';
+  static const String overtimeDetail = '/overtime/detail';
 
   static const String changePassword = '/settings/change-password';
 }
@@ -123,6 +133,21 @@ GoRouter createRouter(AuthService authService) {
         builder: (context, state) => const LeaveApprovalScreen(),
       ),
       GoRoute(
+        path: AppRoutes.overtime,
+        name: 'overtime',
+        builder: (context, state) => const OvertimeScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.overtimeCreate,
+        name: 'overtime-create',
+        builder: (context, state) => const OvertimeFormScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.overtimeApproval,
+        name: 'overtime-approval',
+        builder: (context, state) => const OvertimeApprovalScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.changePassword,
         name: 'change-password',
         builder: (context, state) => const ChangePasswordScreen(),
@@ -134,6 +159,19 @@ GoRouter createRouter(AuthService authService) {
           final extra = state.extra as Map<String, dynamic>;
           return LeaveDetailScreen(
             leave: extra['leave'] as LeaveModel,
+            canApprove: extra['canApprove'] as bool? ?? false,
+            onApprove: extra['onApprove'] as Future<bool> Function(String?)?,
+            onReject: extra['onReject'] as Future<bool> Function(String?)?,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.overtimeDetail,
+        name: 'overtime-detail',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          return OvertimeDetailScreen(
+            overtime: extra['overtime'] as OvertimeModel,
             canApprove: extra['canApprove'] as bool? ?? false,
             onApprove: extra['onApprove'] as Future<bool> Function(String?)?,
             onReject: extra['onReject'] as Future<bool> Function(String?)?,
