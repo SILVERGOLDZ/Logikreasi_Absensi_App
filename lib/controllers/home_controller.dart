@@ -8,13 +8,17 @@ import '../services/socket_service.dart';
 class HomeController extends ChangeNotifier {
   HomeController({this.isAdmin = false}) {
     _subscribeToSocket();
-    if (isAdmin) _subscribeToLeaveSocket();
+    if (isAdmin) {
+      _subscribeToLeaveSocket();
+      _subscribeToOvertimeSocket();
+    }
   }
 
   final bool isAdmin;
 
   List<Map<String, dynamic>> workingUsers = [];
   int pendingLeaveCount = 0;
+  int pendingOvertimeCount = 0;
 
   StreamSubscription? _attendanceSub;
   StreamSubscription? _leaveSub;
@@ -22,7 +26,10 @@ class HomeController extends ChangeNotifier {
   Future<void> init() async {
     await Future.wait([
       loadWorkingUsers(),
-      if (isAdmin) loadPendingLeaveCount(),
+      if (isAdmin) ...[
+        loadPendingLeaveCount(),
+        loadPendingOvertimeCount(),
+      ]
     ]);
   }
 
@@ -62,6 +69,22 @@ class HomeController extends ChangeNotifier {
     try {
       final response = await DioClient.dio.get('/admin/leave/pending');
       pendingLeaveCount = (response.data as List).length;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Gagal load pending leave count: $e');
+    }
+  }
+
+  void _subscribeToOvertimeSocket() {
+    _leaveSub = SocketService.instance.on('overtimeStatusChanged').listen((_) {
+      loadPendingOvertimeCount();
+    });
+  }
+
+  Future<void> loadPendingOvertimeCount() async {
+    try {
+      final response = await DioClient.dio.get('/admin/overtime/pending');
+      pendingOvertimeCount = (response.data as List).length;
       notifyListeners();
     } catch (e) {
       debugPrint('Gagal load pending leave count: $e');
