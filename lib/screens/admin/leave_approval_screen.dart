@@ -28,10 +28,35 @@ class _LeaveApprovalBody extends StatefulWidget {
 
 class _LeaveApprovalBodyState extends State<_LeaveApprovalBody> with SingleTickerProviderStateMixin {
   late final TabController _tab = TabController(length: 2, vsync: this);
+  final _pendingScroll = ScrollController();
+  final _historyScroll = ScrollController();
+  final _searchCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _pendingScroll.addListener(_onPendingScroll);
+    _historyScroll.addListener(_onHistoryScroll);
+  }
+
+  void _onPendingScroll() {
+    if (_pendingScroll.position.pixels >= _pendingScroll.position.maxScrollExtent - 200) {
+      context.read<LeaveApprovalController>().loadMorePending();
+    }
+  }
+
+  void _onHistoryScroll() {
+    if (_historyScroll.position.pixels >= _historyScroll.position.maxScrollExtent - 200) {
+      context.read<LeaveApprovalController>().loadMoreHistory();
+    }
+  }
 
   @override
   void dispose() {
     _tab.dispose();
+    _pendingScroll.dispose();
+    _historyScroll.dispose();
+    _searchCtrl.dispose();
     super.dispose();
   }
 
@@ -57,51 +82,102 @@ class _LeaveApprovalBodyState extends State<_LeaveApprovalBody> with SingleTicke
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tab,
+      body: Column(
         children: [
-          RefreshIndicator(
-            onRefresh: controller.fetchPending,
-            child: controller.pending.isEmpty
-                ? ListView(children: const [
-              Padding(padding: EdgeInsets.all(32), child: Center(child: Text('Tidak ada pengajuan pending', style: TextStyle(color: Colors.grey)))),
-            ])
-                : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: controller.pending.length,
-              itemBuilder: (context, i) {
-                final leave = controller.pending[i];
-                return LeaveStatusCard(
-                  leave: leave,
-                  onTap: () => context.push(
-                    AppRoutes.leaveDetail,
-                    extra: {
-                      'leave': leave,
-                      'canApprove': true,
-                      'onApprove': (String? note) => controller.approve(leave.id, note: note),
-                      'onReject': (String? note) => controller.reject(leave.id, note: note),
-                    },
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchCtrl,
+                    decoration: InputDecoration(
+                      hintText: 'Cari nama pegawai...',
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onChanged: (v) => controller.setSearch(v),
                   ),
-                );
-              },
+                ),
+                const SizedBox(width: 8),
+                DropdownButton<LeaveDateRange>(
+                  value: controller.dateRange,
+                  underline: const SizedBox(),
+                  items: LeaveDateRange.values
+                      .map((r) => DropdownMenuItem(value: r, child: Text(r.label)))
+                      .toList(),
+                  onChanged: (v) {
+                    if (v != null) controller.setDateRange(v);
+                  },
+                ),
+              ],
             ),
           ),
-          RefreshIndicator(
-            onRefresh: controller.fetchHistory,
-            child: controller.history.isEmpty
-                ? ListView(children: const [
-              Padding(padding: EdgeInsets.all(32), child: Center(child: Text('Belum ada riwayat', style: TextStyle(color: Colors.grey)))),
-            ])
-                : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: controller.history.length,
-              itemBuilder: (context, i) {
-                final leave = controller.history[i];
-                return LeaveStatusCard(
-                  leave: leave,
-                  onTap: () => context.push(AppRoutes.leaveDetail, extra: {'leave': leave}),
-                );
-              },
+          Expanded(
+            child: TabBarView(
+              controller: _tab,
+              children: [
+                RefreshIndicator(
+                  onRefresh: controller.fetchPending,
+                  child: controller.pending.isEmpty
+                      ? ListView(children: const [
+                    Padding(padding: EdgeInsets.all(32), child: Center(child: Text('Tidak ada pengajuan pending', style: TextStyle(color: Colors.grey)))),
+                  ])
+                      : ListView.builder(
+                    controller: _pendingScroll,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: controller.pending.length + (controller.hasMorePending ? 1 : 0),
+                    itemBuilder: (context, i) {
+                      if (i >= controller.pending.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      final leave = controller.pending[i];
+                      return LeaveStatusCard(
+                        leave: leave,
+                        onTap: () => context.push(
+                          AppRoutes.leaveDetail,
+                          extra: {
+                            'leave': leave,
+                            'canApprove': true,
+                            'onApprove': (String? note) => controller.approve(leave.id, note: note),
+                            'onReject': (String? note) => controller.reject(leave.id, note: note),
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                RefreshIndicator(
+                  onRefresh: controller.fetchHistory,
+                  child: controller.history.isEmpty
+                      ? ListView(children: const [
+                    Padding(padding: EdgeInsets.all(32), child: Center(child: Text('Belum ada riwayat', style: TextStyle(color: Colors.grey)))),
+                  ])
+                      : ListView.builder(
+                    controller: _historyScroll,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: controller.history.length + (controller.hasMoreHistory ? 1 : 0),
+                    itemBuilder: (context, i) {
+                      if (i >= controller.history.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      final leave = controller.history[i];
+                      return LeaveStatusCard(
+                        leave: leave,
+                        onTap: () => context.push(AppRoutes.leaveDetail, extra: {'leave': leave}),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],

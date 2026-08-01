@@ -67,8 +67,11 @@ class HomeController extends ChangeNotifier {
 
   Future<void> loadPendingLeaveCount() async {
     try {
-      final response = await DioClient.dio.get('/admin/leave/pending');
-      pendingLeaveCount = (response.data as List).length;
+      final response = await DioClient.dio.get(
+        '/admin/leave/pending',
+        queryParameters: {'page': 1, 'limit': 1},
+      );
+      pendingLeaveCount = response.data['total'] as int;
       notifyListeners();
     } catch (e) {
       debugPrint('Gagal load pending leave count: $e');
@@ -83,8 +86,11 @@ class HomeController extends ChangeNotifier {
 
   Future<void> loadPendingOvertimeCount() async {
     try {
-      final response = await DioClient.dio.get('/admin/overtime/pending');
-      pendingOvertimeCount = (response.data as List).length;
+      final response = await DioClient.dio.get(
+        '/admin/overtime/pending',
+        queryParameters: {'page': 1, 'limit': 1},
+      );
+      pendingOvertimeCount = response.data['total'] as int;
       notifyListeners();
     } catch (e) {
       debugPrint('Gagal load pending leave count: $e');
