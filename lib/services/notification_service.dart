@@ -14,21 +14,26 @@ class NotificationService {
   static String? _lastSentToken;
 
   Future<void> init() async {
-    await _initLocalNotifications();
-    final settings =
-    await FirebaseMessaging.instance.requestPermission(provisional: true);
+    try {
+      await _initLocalNotifications();
+      final settings =
+      await FirebaseMessaging.instance.requestPermission(provisional: true);
 
-    print('Status: ${settings.authorizationStatus}');
+      print('Status: ${settings.authorizationStatus}');
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
-        settings.authorizationStatus == AuthorizationStatus.provisional) {
-      await _postToken();
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        await _postToken();
+      }
+
+      _registerTokenRefreshListener();
+      _registerForegroundListener();
+      _registerNotificationTapListener();
+      await _handleInitialMessage();
+    } catch (e) {
+      // Gagal setup notifikasi tidak boleh mengganggu flow login/app start
+      print('Gagal inisialisasi notifikasi: $e');
     }
-
-    _registerTokenRefreshListener();
-    _registerForegroundListener();
-    _registerNotificationTapListener();
-    await _handleInitialMessage();
   }
 
   Future<void> _initLocalNotifications() async {
@@ -129,6 +134,13 @@ class NotificationService {
       case 'leave_rejected':
         context.push(AppRoutes.leave);
         break;
+      case 'overtime_submitted':
+        context.push(AppRoutes.overtimeApproval);
+        break;
+      case 'overtime_approved':
+      case 'overtime_rejected':
+        context.push(AppRoutes.overtime);
+        break;
     }
   }
 
@@ -154,7 +166,8 @@ class NotificationService {
         'token': token,
       });
       _lastSentToken = token;
-    } on DioException catch (e) {
+    } catch (e) {
+      // Tangkap semua jenis error (Firebase, Dio, dll), bukan cuma DioException
       print("error update token: $e");
     }
   }
@@ -185,7 +198,7 @@ class NotificationService {
       }
       await FirebaseMessaging.instance.deleteToken();
       _lastSentToken = null;
-    } on DioException catch (e) {
+    } catch (e) {
       print("error delete token: $e");
     }
   }
