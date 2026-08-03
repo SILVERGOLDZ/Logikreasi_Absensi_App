@@ -1,9 +1,6 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io';
 
-import '../firebase_options.dart';
-import 'notification/browser_notifier_stub.dart'
-if (dart.library.html) 'notification/browser_notifier_web.dart';
-
+import 'package:path/path.dart' as p;
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -12,6 +9,13 @@ import 'package:path_provider/path_provider.dart';
 
 import '../config/routes.dart';
 import 'api.dart';
+
+//web
+import 'package:flutter/foundation.dart' show kIsWeb;
+
+import '../firebase_options.dart';
+import 'notification/browser_notifier_stub.dart'
+if (dart.library.html) 'notification/browser_notifier_web.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _localNotifications =
@@ -178,13 +182,33 @@ class NotificationService {
   Future<String?> _downloadImage(String url) async {
     try {
       final dir = await getTemporaryDirectory();
+
+      await _clearOldNotificationImages(dir);
+
       final filePath =
           '${dir.path}/notif_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
       await Dio().download(url, filePath);
       return filePath;
     } catch (e) {
       print('Gagal download gambar notifikasi: $e');
       return null;
+    }
+  }
+
+  Future<void> _clearOldNotificationImages(Directory dir) async {
+    try {
+      final files = dir.listSync().whereType<File>().where(
+            (f) => p.basename(f.path).startsWith('notif_'),
+      );
+      for (final file in files) {
+        try {
+          await file.delete();
+        } catch (_) {
+        }
+      }
+    } catch (e) {
+      print('Gagal bersihkan gambar notifikasi lama: $e');
     }
   }
 
