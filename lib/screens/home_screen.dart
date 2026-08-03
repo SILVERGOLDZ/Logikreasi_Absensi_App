@@ -106,14 +106,17 @@ class _MenuGrid extends StatelessWidget {
   static int _crossAxisCount(double width) {
     if (width < 360) return 3;
     if (width < 600) return 4;
-    return 5;
+    if (width < 1024) return 5;
+    if (width < 1440) return 6;
+    return 7;
   }
 
   static double _aspectRatio(double width) {
     if (width < 360) return 0.75;
     if (width < 480) return 0.85;
     if (width < 600) return 0.95;
-    return 1.05;
+    if (width < 1024) return 1.05;
+    return 1.15;
   }
 
   @override
@@ -210,7 +213,8 @@ class _MenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final crossAxisCount = _MenuGrid._crossAxisCount(screenWidth);
     final itemWidth = (screenWidth - 32) / crossAxisCount;
-    final iconSize = itemWidth * 0.48;
+    // Dibatasi maksimal 56 agar tidak membesar berlebihan di layar web lebar.
+    final iconSize = (itemWidth * 0.48).clamp(0.0, 56.0);
 
     return InkWell(
       onTap: onTap,
