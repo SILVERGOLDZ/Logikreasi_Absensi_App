@@ -495,150 +495,154 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         foregroundColor: Colors.black87,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    formattedDate,
-                    style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+      body: RefreshIndicator(
+        onRefresh: _loadAttendanceStatus,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      formattedDate,
+                      style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      workTimeInterval,
+                      style: const TextStyle(fontSize: 15, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: Container(
+                  width: double.infinity,
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    formattedTime,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    workTimeInterval,
-                    style: const TextStyle(fontSize: 15, color: Colors.grey),
+                ),
+              ),
+              const SizedBox(height: 30),
+              Row(
+                children: [
+                  Expanded(
+                    child: _infoCard(
+                      "Clock In",
+                      clockInTime != null ? DateFormat('HH:mm').format(clockInTime!) : "-",
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _infoCard(
+                      "Clock Out",
+                      clockOutTime != null ? DateFormat('HH:mm').format(clockOutTime!) : "-",
+                    ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: Container(
-                width: double.infinity,
-                color: Colors.white,
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  formattedTime,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+              const SizedBox(height: 20),
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: displayStatus == "Sedang Bekerja" ? Colors.green.shade100 : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 30),
-            Row(
-              children: [
-                Expanded(
-                  child: _infoCard(
-                    "Clock In",
-                    clockInTime != null ? DateFormat('HH:mm').format(clockInTime!) : "-",
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _infoCard(
-                    "Clock Out",
-                    clockOutTime != null ? DateFormat('HH:mm').format(clockOutTime!) : "-",
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                decoration: BoxDecoration(
-                  color: displayStatus == "Sedang Bekerja" ? Colors.green.shade100 : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  displayStatus,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: displayStatus == "Sedang Bekerja" ? Colors.green : Colors.grey[700],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: (canClockIn || canClockOut) && !_isProcessingAttendance
-                    ? _handleClockInOut
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: canClockIn ? Colors.greenAccent : Colors.red,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: _isProcessingAttendance
-                    ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 3,
-                      ),
+                  child: Text(
+                    displayStatus,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: displayStatus == "Sedang Bekerja" ? Colors.green : Colors.grey[700],
                     ),
-                    const SizedBox(width: 12),
-                    Flexible(
-                      child: Text(
-                        _processingLabel ?? "Memproses...",
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: (canClockIn || canClockOut) && !_isProcessingAttendance
+                      ? _handleClockInOut
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: canClockIn ? Colors.greenAccent : Colors.red,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _isProcessingAttendance
+                      ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Text(
+                          _processingLabel ?? "Memproses...",
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                      : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        canClockIn
+                            ? "CLOCK IN"
+                            : canClockOut
+                            ? "CLOCK OUT"
+                            : "Absensi Selesai",
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 25,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
-                    ),
-                  ],
-                )
-                    : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      canClockIn
-                          ? "CLOCK IN"
-                          : canClockOut
-                          ? "CLOCK OUT"
-                          : "Absensi Selesai",
-                      style: const TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.timer_outlined, color: Colors.white, size: 25),
-                  ],
+                      const SizedBox(width: 8),
+                      const Icon(Icons.timer_outlined, color: Colors.white, size: 25),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            if (!isWithinOffice)
-              const Center(
-                child: Text(
-                  "⚠️ Anda berada di luar radius kantor",
-                  style: TextStyle(color: Colors.red),
+              const SizedBox(height: 16),
+              if (!isWithinOffice)
+                const Center(
+                  child: Text(
+                    "⚠️ Anda berada di luar radius kantor",
+                    style: TextStyle(color: Colors.red),
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

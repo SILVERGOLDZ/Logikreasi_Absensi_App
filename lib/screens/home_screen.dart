@@ -136,7 +136,6 @@ class _MenuGrid extends StatelessWidget {
             _MenuItem(icon: Icons.nights_stay_rounded, label: 'Lembur', color: Colors.black54, screenWidth: screenWidth, onTap: () => context.push('/overtime'),),
             _MenuItem(icon: Icons.home_work, label: 'Perbaikan\nKehadiran', color: Colors.grey.shade300, screenWidth: screenWidth),
             _MenuItem(icon: Icons.people, label: 'Perubahan\nShift', color: Colors.grey.shade300, screenWidth: screenWidth),
-            _MenuItem(icon: Icons.access_time, label: 'Kehadiran\nManual', color: Colors.grey.shade300, screenWidth: screenWidth),
             _MenuItem(icon: Icons.payment, label: 'Kasbon', color: Colors.grey.shade300, screenWidth: screenWidth),
             _MenuItem(icon: Icons.money, label: 'Reimburse', color: Colors.grey.shade300, screenWidth: screenWidth),
             if (isAdmin)...[
@@ -146,6 +145,13 @@ class _MenuGrid extends StatelessWidget {
                 color: Colors.blue,
                 screenWidth: screenWidth,
                 onTap: () => context.push('/admin/announcement/create'),
+              ),
+              _MenuItem(
+                icon: Icons.handyman,
+                label: 'Kehadiran\nManual',
+                color: Colors.purple,
+                screenWidth: screenWidth,
+                onTap: () => context.push('/admin/manual-attendance'),
               ),
               _MenuItem(icon: Icons.free_breakfast_rounded, label: 'Tetapkan\nLibur', color: Colors.brown, screenWidth: screenWidth, onTap: () => context.push('/admin/holiday')),
               _MenuItem(

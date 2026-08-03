@@ -13,6 +13,7 @@ import '../models/overtime_model.dart';
 import '../screens/admin/create_announcement_screen.dart';
 import '../screens/admin/holiday_management_screen.dart';
 import '../screens/admin/leave_approval_screen.dart';
+import '../screens/admin/manual_attendance_screen.dart';
 import '../screens/announcement/detail_announcement_screen.dart';
 import '../screens/announcement/list_announcement_screen.dart';
 import '../screens/attendance_screen.dart';
@@ -21,7 +22,6 @@ import '../screens/leave/leave_detail_screen.dart';
 import '../screens/leave/leave_form_screen.dart';
 import '../screens/leave/leave_screen.dart';
 import '../screens/login_register/login_screen.dart';
-import '../screens/login_register/register_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/test_screen.dart';
 import '../services/auth/auth_service.dart';
@@ -53,6 +53,8 @@ class AppRoutes {
   static const String overtimeCreate = '/overtime/create';
   static const String overtimeApproval = '/overtime/approval';
   static const String overtimeDetail = '/overtime/detail';
+
+  static const String adminManualAttendance = '/admin/manual-attendance';
 
   static const String changePassword = '/settings/change-password';
 }
@@ -146,6 +148,11 @@ GoRouter createRouter(AuthService authService) {
         path: AppRoutes.overtimeApproval,
         name: 'overtime-approval',
         builder: (context, state) => const OvertimeApprovalScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminManualAttendance,
+        name: 'admin-manual-attendance',
+        builder: (context, state) => const ManualAttendanceScreen(),
       ),
       GoRoute(
         path: AppRoutes.changePassword,
