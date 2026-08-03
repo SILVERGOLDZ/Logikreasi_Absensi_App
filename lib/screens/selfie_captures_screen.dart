@@ -7,6 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+// WEB
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 /// Halaman full-screen untuk mengambil selfie dan preview hasilnya.
 /// Mengembalikan XFile jika user menekan "Gunakan Foto Ini",
 /// atau null jika user membatalkan di titik manapun.
@@ -76,6 +81,11 @@ class _SelfieCaptureScreenState extends State<SelfieCaptureScreen>
   /// _cameraState yang sesuai supaya UI menampilkan tombol yang tepat
   /// (Coba Lagi / Buka Pengaturan) — user WAJIB allow untuk lanjut.
   Future<bool> _ensureCameraPermission() async {
+    // Web: tidak ada permission_handler. Browser sudah menampilkan dialog
+    // izin sendiri saat CameraController.initialize() dipanggil (getUserMedia).
+    // Kalau user tolak, exception akan tertangkap di _initCamera() -> _CameraState.error.
+    if (kIsWeb) return true;
+
     var status = await Permission.camera.status;
 
     if (status.isDenied) {
@@ -92,7 +102,6 @@ class _SelfieCaptureScreenState extends State<SelfieCaptureScreen>
       return false;
     }
 
-    // Masih denied setelah diminta -> tap "Coba Lagi" akan minta lagi.
     setState(() => _cameraState = _CameraState.permissionDenied);
     return false;
   }
@@ -115,7 +124,11 @@ class _SelfieCaptureScreenState extends State<SelfieCaptureScreen>
 
       await controller.initialize();
 
-      await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      // screen.orientation.lock() tidak didukung browser di luar mode
+      // fullscreen/PWA installed -> skip di web, wajib untuk mobile.
+      if (!kIsWeb) {
+        await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      }
 
       if (!mounted) return;
       setState(() {
@@ -123,6 +136,7 @@ class _SelfieCaptureScreenState extends State<SelfieCaptureScreen>
         _cameraState = _CameraState.ready;
       });
     } catch (e) {
+      print("DEBUG camera init error: $e");
       if (!mounted) return;
       setState(() => _cameraState = _CameraState.error);
     }
@@ -306,14 +320,9 @@ class _SelfieCaptureScreenState extends State<SelfieCaptureScreen>
       children: [
         Expanded(
           child: Center(
-            // Aspect ratio diambil dari dimensi FILE ASLI hasil capture,
-            // jadi preview PASTI sama persis dengan foto yang tersimpan.
             child: AspectRatio(
               aspectRatio: size.width / size.height,
-              child: Image.file(
-                File(_capturedPhoto!.path),
-                fit: BoxFit.contain,
-              ),
+              child: _buildPhotoPreview(_capturedPhoto!),
             ),
           ),
         ),
@@ -351,5 +360,23 @@ class _SelfieCaptureScreenState extends State<SelfieCaptureScreen>
         ),
       ],
     );
+  }
+
+  /// XFile.path di web berupa blob URL, bukan path filesystem asli,
+  /// jadi Image.file (dart:io) tidak bisa dipakai -> wajib Image.memory
+  /// dari bytes untuk web. Mobile tetap Image.file (tidak diubah).
+  Widget _buildPhotoPreview(XFile file) {
+    if (kIsWeb) {
+      return FutureBuilder<Uint8List>(
+        future: file.readAsBytes(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator(color: Colors.white));
+          }
+          return Image.memory(snapshot.data!, fit: BoxFit.contain);
+        },
+      );
+    }
+    return Image.file(File(file.path), fit: BoxFit.contain);
   }
 }
