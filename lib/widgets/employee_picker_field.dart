@@ -39,6 +39,8 @@ class EmployeePickerField extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: InputDecorator(
         decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.white,
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           suffixIcon: const Icon(Icons.arrow_drop_down),
@@ -136,6 +138,8 @@ class _EmployeePickerSheetState extends State<_EmployeePickerSheet> {
               controller: _searchController,
               onChanged: _onSearchChanged,
               decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
                 hintText: 'Cari nama karyawan...',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),

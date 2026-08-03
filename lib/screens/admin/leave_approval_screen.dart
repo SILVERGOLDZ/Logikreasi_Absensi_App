@@ -92,6 +92,8 @@ class _LeaveApprovalBodyState extends State<_LeaveApprovalBody> with SingleTicke
                   child: TextField(
                     controller: _searchCtrl,
                     decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
                       hintText: 'Cari nama pegawai...',
                       prefixIcon: const Icon(Icons.search, size: 20),
                       isDense: true,
@@ -102,15 +104,22 @@ class _LeaveApprovalBodyState extends State<_LeaveApprovalBody> with SingleTicke
                   ),
                 ),
                 const SizedBox(width: 8),
-                DropdownButton<LeaveDateRange>(
-                  value: controller.dateRange,
-                  underline: const SizedBox(),
-                  items: LeaveDateRange.values
-                      .map((r) => DropdownMenuItem(value: r, child: Text(r.label)))
-                      .toList(),
-                  onChanged: (v) {
-                    if (v != null) controller.setDateRange(v);
-                  },
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: DropdownButton<LeaveDateRange>(
+                    value: controller.dateRange,
+                    underline: const SizedBox(),
+                    items: LeaveDateRange.values
+                        .map((r) => DropdownMenuItem(value: r, child: Text(r.label)))
+                        .toList(),
+                    onChanged: (v) {
+                      if (v != null) controller.setDateRange(v);
+                    },
+                  ),
                 ),
               ],
             ),

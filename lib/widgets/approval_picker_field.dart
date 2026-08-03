@@ -34,6 +34,8 @@ class ApproverPickerField extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: InputDecorator(
         decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.white,
           labelText: 'Ajukan kepada',
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           suffixIcon: const Icon(Icons.arrow_drop_down),

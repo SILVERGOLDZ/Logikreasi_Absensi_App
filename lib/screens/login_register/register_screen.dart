@@ -78,16 +78,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Text('Buat Akun Baru', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 32),
 
-                  TextFormField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email)), keyboardType: TextInputType.emailAddress, validator: (v) => v?.contains('@') ?? false ? null : 'Email tidak valid'),
+                  TextFormField(controller: _emailController, decoration: const InputDecoration(filled: true,
+                      fillColor: Colors.white,labelText: 'Email', prefixIcon: Icon(Icons.email)), keyboardType: TextInputType.emailAddress, validator: (v) => v?.contains('@') ?? false ? null : 'Email tidak valid'),
                   const SizedBox(height: 16),
 
-                  TextFormField(controller: _usernameController, decoration: const InputDecoration(labelText: 'Username', prefixIcon: Icon(Icons.person)), validator: (v) => v?.isEmpty ?? true ? 'Wajib diisi' : null),
+                  TextFormField(controller: _usernameController, decoration: const InputDecoration(filled: true,
+                      fillColor: Colors.white,labelText: 'Username', prefixIcon: Icon(Icons.person)), validator: (v) => v?.isEmpty ?? true ? 'Wajib diisi' : null),
                   const SizedBox(height: 16),
 
-                  TextFormField(controller: _passwordController, obscureText: _obscurePassword, decoration: InputDecoration(labelText: 'Password', prefixIcon: const Icon(Icons.lock), suffixIcon: IconButton(icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off), onPressed: () => setState(() => _obscurePassword = !_obscurePassword))), validator: (v) => (v?.length ?? 0) < 6 ? 'Minimal 6 karakter' : null),
+                  TextFormField(controller: _passwordController, obscureText: _obscurePassword, decoration: InputDecoration(filled: true,
+                      fillColor: Colors.white,labelText: 'Password', prefixIcon: const Icon(Icons.lock), suffixIcon: IconButton(icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off), onPressed: () => setState(() => _obscurePassword = !_obscurePassword))), validator: (v) => (v?.length ?? 0) < 6 ? 'Minimal 6 karakter' : null),
                   const SizedBox(height: 16),
 
-                  TextFormField(controller: _confirmPasswordController, obscureText: _obscureConfirm, decoration: InputDecoration(labelText: 'Konfirmasi Password', prefixIcon: const Icon(Icons.lock), suffixIcon: IconButton(icon: Icon(_obscureConfirm ? Icons.visibility : Icons.visibility_off), onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm))), validator: (v) => v?.isEmpty ?? true ? 'Wajib diisi' : null),
+                  TextFormField(controller: _confirmPasswordController, obscureText: _obscureConfirm, decoration: InputDecoration(filled: true,
+                      fillColor: Colors.white,labelText: 'Konfirmasi Password', prefixIcon: const Icon(Icons.lock), suffixIcon: IconButton(icon: Icon(_obscureConfirm ? Icons.visibility : Icons.visibility_off), onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm))), validator: (v) => v?.isEmpty ?? true ? 'Wajib diisi' : null),
 
                   const SizedBox(height: 32),
                   SizedBox(
