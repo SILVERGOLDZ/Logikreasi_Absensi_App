@@ -91,29 +91,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // fitur update profile 
-
-  // Future<void> _updateProfile() async {
-  //   if (!_formKey.currentState!.validate()) return;
-  //   setState(() => _isLoading = true);
-  //
-  //   try {
-  //     final response = await DioClient.dio.put('/user/profile', data: {
-  //       'username': _usernameController.text.trim(),
-  //     });
-  //
-  //     if (response.statusCode == 200) {
-  //       final auth = Provider.of<AuthService>(context, listen: false);
-  //       await auth.login(auth.token!, response.data['user']);
-  //       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profil berhasil diupdate')));
-  //     }
-  //   } catch (e) {
-  //     _showError('Gagal update profil');
-  //   } finally {
-  //     if (mounted) setState(() => _isLoading = false);
-  //   }
-  // }
-
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
   }

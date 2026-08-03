@@ -18,8 +18,6 @@ class _ListPengumumanScreenState extends State<ListPengumumanScreen> {
   @override
   void initState() {
     super.initState();
-    // AnnouncementController itu sendiri sudah di-provide di root (main.dart),
-    // di sini kita cuma minta dia (re)load halaman pertama untuk list ini.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AnnouncementController>().loadListInitial();
     });

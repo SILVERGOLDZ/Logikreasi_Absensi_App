@@ -1,7 +1,3 @@
-// screens/overtime/overtime_detail_screen.dart
-//
-// Mirror pola LeaveDetailScreen.
-
 import 'dart:io';
 
 import 'package:absensi_app/config/text_form_config.dart';

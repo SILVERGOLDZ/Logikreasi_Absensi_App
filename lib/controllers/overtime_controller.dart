@@ -1,17 +1,11 @@
-// controllers/overtime_controller.dart
-//
-// ASUMSI: mengikuti pola LeaveController (belum lihat source aslinya),
-// pakai DioClient.dio seperti yang terlihat dipakai di LeaveDetailScreen.
-// Sesuaikan import '../services/api.dart' & base path endpoint kalau beda.
-
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-import '../models/approver_model.dart'; // TODO: sesuaikan path kalau beda
+import '../models/approver_model.dart';
 import '../models/overtime_model.dart';
-import '../services/api.dart'; // TODO: sesuaikan, harus expose DioClient.dio
+import '../services/api.dart';
 
 class OvertimeController extends ChangeNotifier {
   List<ApproverModel> approvers = [];

@@ -115,8 +115,6 @@ class _SelfieCaptureScreenState extends State<SelfieCaptureScreen>
 
       await controller.initialize();
 
-      // Kunci orientasi hasil capture ke portrait, agar foto TIDAK
-      // pernah keluar landscape walau device diputar-putar saat capture.
       await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
 
       if (!mounted) return;

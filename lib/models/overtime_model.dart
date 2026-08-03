@@ -1,12 +1,3 @@
-// models/overtime_model.dart
-//
-// Struktur mengikuti pola LeaveModel (lihat factory LeaveModel.fromJson).
-//
-// ASUMSI: RequesterInfo didefinisikan di leave_model.dart (satu file dengan
-// LeaveModel), karena itu pola umum. Kalau ternyata RequesterInfo ada di file
-// terpisah (misal requester_info.dart), ganti baris import di bawah ini saja
-// — sisanya tidak perlu berubah.
-
 import 'leave_model.dart'; // TODO: sesuaikan kalau RequesterInfo ada di file lain
 
 class OvertimeApprovalModel {
