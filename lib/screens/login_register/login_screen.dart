@@ -84,7 +84,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   TextFormField(
                     controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.person), border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.person), border: OutlineInputBorder(), filled: true,
+                        fillColor: Colors.white),
                     validator: (v) => v?.isEmpty ?? true ? 'Wajib diisi' : null,
                   ),
                   const SizedBox(height: 16),
@@ -93,6 +94,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
                       labelText: 'Password',
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(

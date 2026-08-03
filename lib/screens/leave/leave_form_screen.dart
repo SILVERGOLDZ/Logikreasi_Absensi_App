@@ -126,6 +126,7 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 20),
             decoration: BoxDecoration(
+              color: Colors.white,
               border: Border.all(color: Colors.grey.shade300),
               borderRadius: BorderRadius.circular(8),
             ),
@@ -138,6 +139,7 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
         else
           Container(
             decoration: BoxDecoration(
+              color: Colors.white,
               border: Border.all(color: Colors.grey.shade300),
               borderRadius: BorderRadius.circular(8),
             ),
@@ -213,6 +215,8 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
                 controller: _titleController,
                 maxLength: TextFormConfig.title,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   labelText: 'Judul',
                   hintText: 'Contoh: Cuti tahunan keluarga',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -224,6 +228,8 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
                 onTap: _pickDateRange,
                 child: InputDecorator(
                   decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
                     labelText: 'Tanggal',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     suffixIcon: const Icon(Icons.calendar_today),
@@ -241,6 +247,8 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
                 maxLines: 3,
                 maxLength: TextFormConfig.smallContent,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   labelText: 'Alasan',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),

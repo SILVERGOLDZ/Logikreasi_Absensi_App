@@ -360,6 +360,8 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
                 onTap: _pickDate,
                 child: InputDecorator(
                   decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
                     labelText: _isRange ? 'Tanggal (Rentang)' : 'Tanggal',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     suffixIcon: const Icon(Icons.calendar_today),
@@ -380,6 +382,8 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
                 controller: _reasonController,
                 maxLength: TextFormConfig.shortTitle,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   labelText: 'Jenis / Alasan Libur (mis. Cuti Bersama)',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
@@ -393,6 +397,8 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
                 controller: _titleController,
                 maxLength: TextFormConfig.title,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   labelText: 'Judul Pengumuman',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
@@ -403,6 +409,8 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
                 controller: _contentController,
                 maxLength: TextFormConfig.largeContent,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   labelText: 'Isi Pengumuman',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   alignLabelWithHint: true,

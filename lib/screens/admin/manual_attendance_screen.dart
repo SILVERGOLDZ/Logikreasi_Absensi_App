@@ -81,6 +81,8 @@ class _ManualAttendanceBodyState extends State<_ManualAttendanceBody> {
               onTap: () => _pickDate(controller),
               child: InputDecorator(
                 decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   suffixIcon: const Icon(Icons.calendar_today),
                 ),
@@ -125,9 +127,13 @@ class _ManualAttendanceBodyState extends State<_ManualAttendanceBody> {
                 const Text('Status Kehadiran', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: controller.status,
+                  initialValue: controller.status,
                   decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                   items: attendanceStatusOptions
                       .map((s) => DropdownMenuItem(value: s, child: Text(s)))
@@ -141,6 +147,8 @@ class _ManualAttendanceBodyState extends State<_ManualAttendanceBody> {
                   controller: _reasonController,
                   maxLines: 2,
                   decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
                     labelText: 'Catatan (opsional)',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   ),

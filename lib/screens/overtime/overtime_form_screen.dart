@@ -168,6 +168,8 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
         onTap: _pickDateRange,
         child: InputDecorator(
           decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
             labelText: 'Rentang Tanggal',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             suffixIcon: const Icon(Icons.calendar_today),
@@ -184,6 +186,8 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
       onTap: _pickSingleDate,
       child: InputDecorator(
         decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.white,
           labelText: 'Tanggal',
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           suffixIcon: const Icon(Icons.calendar_today),
@@ -203,6 +207,8 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
             onTap: () => _pickTime(true),
             child: InputDecorator(
               decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
                 labelText: 'Jam Mulai',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 suffixIcon: const Icon(Icons.access_time),
@@ -217,6 +223,8 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
             onTap: () => _pickTime(false),
             child: InputDecorator(
               decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
                 labelText: 'Jam Selesai',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 suffixIcon: const Icon(Icons.access_time),
@@ -249,6 +257,7 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 20),
             decoration: BoxDecoration(
+              color: Colors.white,
               border: Border.all(color: Colors.grey.shade300),
               borderRadius: BorderRadius.circular(8),
             ),
@@ -261,6 +270,7 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
         else
           Container(
             decoration: BoxDecoration(
+              color: Colors.white,
               border: Border.all(color: Colors.grey.shade300),
               borderRadius: BorderRadius.circular(8),
             ),
@@ -273,6 +283,7 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
 
                 return Container(
                   decoration: BoxDecoration(
+                    color: Colors.white,
                     border: isLast ? null : Border(bottom: BorderSide(color: Colors.grey.shade200)),
                   ),
                   child: ListTile(
@@ -334,6 +345,8 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
                 controller: _titleController,
                 maxLength: TextFormConfig.title,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   labelText: 'Judul',
                   hintText: 'Contoh: Lembur closing laporan bulanan',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -349,6 +362,8 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
                 controller: _compensationController,
                 maxLength: TextFormConfig.title,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   labelText: 'Jenis Kompensasi',
                   hintText: 'Contoh: Uang Rp 150.000 / Libur pengganti 1 hari',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -361,6 +376,8 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
                 maxLines: 3,
                 maxLength: TextFormConfig.smallContent,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   labelText: 'Alasan',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
