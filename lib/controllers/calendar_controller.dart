@@ -7,7 +7,6 @@ import '../models/calendar_model.dart';
 import '../services/attendance_api.dart';
 import '../services/socket_service.dart';
 
-/// Status of a day, used by the screen to decide which dot color to show.
 enum DayStatus { holiday, leave, both }
 
 class CalendarController extends ChangeNotifier {
@@ -207,8 +206,6 @@ class CalendarController extends ChangeNotifier {
     await fetchAbsent(date: dateKey(_selectedDay ?? DateTime.now()));
   }
 
-  /// Business logic only — no Color/Flutter UI types here on purpose.
-  /// The screen maps this to whatever color it wants to draw.
   DayStatus? getDayStatus(DateTime day) {
     final info = monthDays[dateKey(day)];
     if (info == null) return null;

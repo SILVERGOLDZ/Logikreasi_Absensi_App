@@ -1,33 +1,3 @@
-// import 'api.dart';
-//
-// class AttendanceApi {
-//   static Future<Map<String, dynamic>> getPresent({
-//     String search = '',
-//     required int page,
-//     required int limit,
-//   }) async {
-//     final response = await DioClient.dio.get('/attendance/present', queryParameters: {
-//       'search': search,
-//       'page': page,
-//       'limit': limit,
-//     });
-//     return response.data;
-//   }
-//
-//   static Future<Map<String, dynamic>> getAbsent({
-//     String search = '',
-//     required int page,
-//     required int limit,
-//   }) async {
-//     final response = await DioClient.dio.get('/attendance/absent', queryParameters: {
-//       'search': search,
-//       'page': page,
-//       'limit': limit,
-//     });
-//     return response.data;
-//   }
-// }
-
 import 'api.dart';
 
 class AttendanceApi {

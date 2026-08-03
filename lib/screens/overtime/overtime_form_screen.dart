@@ -1,10 +1,3 @@
-// screens/overtime/overtime_form_screen.dart
-//
-// Mirror pola LeaveFormScreen, dengan tambahan:
-// - toggle "per hari" vs "rentang tanggal" (isRange)
-// - time picker (startTime, endTime)
-// - field compensationType (bebas diisi user)
-
 import 'dart:io';
 import 'package:absensi_app/config/text_form_config.dart';
 import 'package:file_picker/file_picker.dart';

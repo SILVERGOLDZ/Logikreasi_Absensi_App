@@ -26,7 +26,6 @@ class SocketService {
 
   bool get isConnected => _socket?.connected ?? false;
 
-  /// Opens the underlying socket connection. Safe to call multiple times;
   /// only connects once.
   void connect() {
     if (_socket != null) return;

@@ -4,13 +4,6 @@ import 'package:flutter/material.dart';
 
 enum BannerType { error, warning, success, info }
 
-/// Banner overlay yang menggantikan SnackBar.
-///
-/// Kenapa bukan SnackBar? SnackBar bawaan Flutter di-queue oleh
-/// ScaffoldMessenger — kalau user tap tombol berkali-kali dan tiap tap
-/// menghasilkan error, semua pesan itu akan antre dan muncul satu-satu
-/// (lama & mengganggu). AppBanner ini selalu HANYA punya 1 entry aktif:
-/// begitu ada banner baru, banner lama langsung dibuang & diganti.
 class AppBanner {
   AppBanner._();
 
@@ -23,8 +16,6 @@ class AppBanner {
         BannerType type = BannerType.error,
         Duration duration = const Duration(seconds: 3),
       }) {
-    // Buang banner lama (kalau ada) sebelum pasang yang baru,
-    // supaya tidak ada antrian sama sekali.
     _dismiss();
 
     final overlayState = Overlay.maybeOf(context, rootOverlay: true);
@@ -161,9 +152,6 @@ class _BannerWidgetState extends State<_BannerWidget>
   }
 }
 
-/// Helper lama dipertahankan supaya semua pemanggilan
-/// `showErrorSnackBar(context, "...")` yang sudah ada di project
-/// tetap jalan tanpa perlu diubah satu-satu.
 void showErrorSnackBar(BuildContext context, String message) {
   AppBanner.show(context, message: message, type: BannerType.error);
 }

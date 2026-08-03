@@ -1,10 +1,3 @@
-// screens/overtime/overtime_screen.dart
-//
-// Mirror pola LeaveScreen.
-// TODO: tambahkan AppRoutes.overtime, AppRoutes.overtimeCreate,
-// AppRoutes.overtimeDetail ke config/routes.dart kamu (nama route
-// di bawah ini masih placeholder string).
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';

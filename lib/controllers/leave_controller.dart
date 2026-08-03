@@ -49,8 +49,6 @@ class LeaveController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// [attachment] opsional (PDF). Dikirim dalam 1 request multipart bareng field lain,
-  /// field name file harus 'attachment' (sesuai upload.single('attachment') di backend).
   Future<bool> submitLeave({
     required String title,
     required String startDate,

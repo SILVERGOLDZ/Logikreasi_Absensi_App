@@ -222,8 +222,6 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
     return initial;
   }
 
-  // Mode tanggal tunggal: pakai showDatePicker + selectableDayPredicate
-  // supaya tanggal yang sudah jadi hari libur tidak bisa dipilih lagi.
   Future<void> _pickSingleDate() async {
     final today = DateTime.now();
     final todayNormalized = DateTime(today.year, today.month, today.day);
@@ -245,9 +243,6 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
     });
   }
 
-  // Mode rentang: konsisten dengan LeaveFormScreen, pakai showDateRangePicker.
-  // showDateRangePicker tidak mendukung selectableDayPredicate, jadi validasi
-  // bentrok tanggal tetap dilakukan saat submit.
   Future<void> _pickDateRange() async {
     final today = DateTime.now();
     final todayNormalized = DateTime(today.year, today.month, today.day);
