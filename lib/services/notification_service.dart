@@ -1,3 +1,9 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+
+import '../firebase_options.dart';
+import 'notification/browser_notifier_stub.dart'
+if (dart.library.html) 'notification/browser_notifier_web.dart';
+
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -15,7 +21,16 @@ class NotificationService {
 
   Future<void> init() async {
     try {
-      await _initLocalNotifications();
+      if (kIsWeb) {
+        await BrowserNotifier.requestPermission();
+        BrowserNotifier.listenForClicks(_navigateByType);
+        _registerForegroundListenerWeb();
+      } else {
+        await _initLocalNotifications();
+        _registerForegroundListener();
+        _registerNotificationTapListener();
+      }
+
       final settings =
       await FirebaseMessaging.instance.requestPermission(provisional: true);
 
@@ -27,11 +42,8 @@ class NotificationService {
       }
 
       _registerTokenRefreshListener();
-      _registerForegroundListener();
-      _registerNotificationTapListener();
       await _handleInitialMessage();
     } catch (e) {
-      // Gagal setup notifikasi tidak boleh mengganggu flow login/app start
       print('Gagal inisialisasi notifikasi: $e');
     }
   }
@@ -104,6 +116,25 @@ class NotificationService {
     });
   }
 
+  // Versi WEB dari foreground listener. Tidak pakai flutter_local_notifications
+// (tidak support web) dan tidak download gambar ke disk — icon langsung
+// pakai URL, browser yang fetch sendiri.
+  void _registerForegroundListenerWeb() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      final notification = message.notification;
+      if (notification == null) return;
+
+      final imageUrl = notification.android?.imageUrl ?? notification.apple?.imageUrl;
+
+      BrowserNotifier.show(
+        title: notification.title ?? '',
+        body: notification.body,
+        imageUrl: imageUrl,
+        type: message.data['type'] as String?,
+      );
+    });
+  }
+
   // App di BACKGROUND, user tap notifikasi dari tray
   void _registerNotificationTapListener() {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -159,7 +190,10 @@ class NotificationService {
 
   static Future<void> _postToken() async {
     try {
-      final token = await FirebaseMessaging.instance.getToken();
+      final token = kIsWeb
+          ? await FirebaseMessaging.instance.getToken(vapidKey: webVapidKey)
+          : await FirebaseMessaging.instance.getToken();
+
       if (token == null || token == _lastSentToken) return;
 
       await DioClient.dio.put('/notification/update-token', data: {
@@ -167,7 +201,6 @@ class NotificationService {
       });
       _lastSentToken = token;
     } catch (e) {
-      // Tangkap semua jenis error (Firebase, Dio, dll), bukan cuma DioException
       print("error update token: $e");
     }
   }

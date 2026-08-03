@@ -1,3 +1,6 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'firebase_options.dart';
+
 import 'package:absensi_app/controllers/announcement_controller.dart';
 import 'package:absensi_app/services/api.dart';
 import 'package:absensi_app/services/auth/auth_service.dart';
@@ -26,8 +29,14 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  if (kIsWeb) {
+    await Firebase.initializeApp(options: webFirebaseOptions);
+    // onBackgroundMessage (top-level Dart handler) TIDAK didukung di web.
+    // Background message di web ditangani oleh web/firebase-messaging-sw.js.
+  } else {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  }
 
   await initializeDateFormatting();
 

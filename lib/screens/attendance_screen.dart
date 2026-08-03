@@ -15,6 +15,9 @@ import '../services/api.dart';
 import '../services/auth/auth_service.dart';
 import '../widgets/app_scaffold.dart';
 
+// Web
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
 
@@ -304,10 +307,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     borderRadius: BorderRadius.circular(12),
                     child: AspectRatio(
                       aspectRatio: aspectRatio,
-                      child: Image.file(
-                        File(selfie.path),
-                        fit: BoxFit.contain,
-                      ),
+                      child: kIsWeb
+                          ? Image.memory(bytes, fit: BoxFit.contain)
+                          : Image.file(File(selfie.path), fit: BoxFit.contain),
                     ),
                   ),
                 ),
@@ -432,9 +434,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
       // 4. Kirim ke server
       try {
+        final selfieBytes = await selfieToSend.readAsBytes();
         final formData = FormData.fromMap({
-          'selfie': await MultipartFile.fromFile(
-            selfieToSend.path,
+          'selfie': MultipartFile.fromBytes(
+            selfieBytes,
             filename: "selfie_${DateTime.now().millisecondsSinceEpoch}.jpg",
           ),
           if (reason != null) 'reason': reason,
