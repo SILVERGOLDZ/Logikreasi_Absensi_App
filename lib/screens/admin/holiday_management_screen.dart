@@ -7,6 +7,7 @@ import 'package:absensi_app/utils/title_case_helper.dart';
 
 import '../../services/holiday_api.dart';
 import '../../widgets/app_scaffold.dart';
+import '../../widgets/snackbar.dart';
 
 class HolidayManagementScreen extends StatefulWidget {
   const HolidayManagementScreen({super.key});
@@ -19,7 +20,6 @@ class _HolidayManagementScreenState extends State<HolidayManagementScreen> {
   DateTime _focusedMonth = DateTime.now();
   List<dynamic> _holidays = [];
   bool _isLoading = false;
-
 
   Set<DateTime> get _activeHolidayDates {
     return _holidays
@@ -46,7 +46,7 @@ class _HolidayManagementScreenState extends State<HolidayManagementScreen> {
       );
       setState(() => _holidays = data);
     } catch (e) {
-      _showSnack('Gagal memuat data hari libur');
+      if (mounted) showErrorSnackBar(context, 'Gagal memuat data hari libur');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -57,11 +57,6 @@ class _HolidayManagementScreenState extends State<HolidayManagementScreen> {
       _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + offset, 1);
     });
     _loadHolidays();
-  }
-
-  void _showSnack(String msg) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   Future<void> _cancelHoliday(int id) async {
@@ -80,10 +75,10 @@ class _HolidayManagementScreenState extends State<HolidayManagementScreen> {
 
     try {
       await HolidayApi.cancel(id);
-      _showSnack('Hari libur dibatalkan');
+      if (mounted) showSuccessSnackBar(context, 'Hari libur dibatalkan');
       _loadHolidays();
     } catch (e) {
-      _showSnack('Gagal membatalkan');
+      if (mounted) showErrorSnackBar(context, 'Gagal membatalkan');
     }
   }
 
@@ -160,7 +155,7 @@ class _HolidayManagementScreenState extends State<HolidayManagementScreen> {
                         trailing: isCancelled
                             ? const Chip(label: Text('Dibatalkan'))
                             : DateTime.parse(h['date']).isBefore(DateTime.now().toLocal())? null
-                              : IconButton(
+                            : IconButton(
                           icon: const Icon(Icons.delete_outline, color: Colors.red),
                           onPressed: () => _cancelHoliday(h['id']),
                         ),
@@ -218,20 +213,25 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
     super.dispose();
   }
 
-  Future<void> _pickDate({required bool isStart}) async {
-    DateTime candidate = DateTime.now();
-    final normalized = DateTime(candidate.year, candidate.month, candidate.day);
-
-    // kalau hari ini sudah libur, geser ke depan sampai ketemu yang kosong
-    DateTime initial = normalized;
+  DateTime _firstAvailableDate() {
+    final today = DateTime.now();
+    DateTime initial = DateTime(today.year, today.month, today.day);
     while (widget.existingDates.contains(initial)) {
       initial = initial.add(const Duration(days: 1));
     }
+    return initial;
+  }
+
+  // Mode tanggal tunggal: pakai showDatePicker + selectableDayPredicate
+  // supaya tanggal yang sudah jadi hari libur tidak bisa dipilih lagi.
+  Future<void> _pickSingleDate() async {
+    final today = DateTime.now();
+    final todayNormalized = DateTime(today.year, today.month, today.day);
 
     final picked = await showDatePicker(
       context: context,
-      initialDate: initial,
-      firstDate: DateTime(2020),
+      initialDate: _firstAvailableDate(),
+      firstDate: todayNormalized,
       lastDate: DateTime(2035),
       selectableDayPredicate: (day) {
         final d = DateTime(day.year, day.month, day.day);
@@ -240,15 +240,41 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
     );
     if (picked == null) return;
     setState(() {
-      if (isStart) {
-        _startDate = picked;
-        if (_isRange && _endDate != null && _endDate!.isBefore(picked)) {
-          _endDate = null;
-        }
-      } else {
-        _endDate = picked;
-      }
+      _startDate = picked;
+      _endDate = null;
     });
+  }
+
+  // Mode rentang: konsisten dengan LeaveFormScreen, pakai showDateRangePicker.
+  // showDateRangePicker tidak mendukung selectableDayPredicate, jadi validasi
+  // bentrok tanggal tetap dilakukan saat submit.
+  Future<void> _pickDateRange() async {
+    final today = DateTime.now();
+    final todayNormalized = DateTime(today.year, today.month, today.day);
+
+    final initialRange = (_startDate != null && _endDate != null)
+        ? DateTimeRange(start: _startDate!, end: _endDate!)
+        : DateTimeRange(start: _firstAvailableDate(), end: _firstAvailableDate());
+
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: todayNormalized,
+      lastDate: DateTime(2035),
+      initialDateRange: initialRange,
+    );
+    if (picked == null) return;
+    setState(() {
+      _startDate = picked.start;
+      _endDate = picked.end;
+    });
+  }
+
+  void _pickDate() {
+    if (_isRange) {
+      _pickDateRange();
+    } else {
+      _pickSingleDate();
+    }
   }
 
   List<DateTime> _datesInRange(DateTime start, DateTime end) {
@@ -283,7 +309,6 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
         .toList();
 
     if (conflicts.isNotEmpty) {
-      final fmt = DateFormat('dd MMM yyyy');
       setState(() => _errorMessage = 'Tidak boleh ada libur di rentang tanggal yang dipilih');
       return; // stop sebelum hit API
     }
@@ -299,11 +324,12 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
         content: _contentController.text.trim(),
       );
       widget.onSaved();
-    }catch (e) {
+    } catch (e) {
       if (e is DioException) {
         debugPrint("STATUS: ${e.response?.statusCode}");
         debugPrint("DATA: ${e.response?.data}");
       }
+      if (mounted) showErrorSnackBar(context, 'Gagal menyimpan hari libur');
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -329,32 +355,38 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Rentang tanggal (bulk)'),
                 value: _isRange,
-                onChanged: (v) => setState(() => _isRange = v),
+                onChanged: (v) => setState(() {
+                  _isRange = v;
+                  if (!v) _endDate = null;
+                }),
               ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(_isRange ? 'Tanggal Mulai' : 'Tanggal'),
-                subtitle: Text(_startDate != null ? fmt.format(_startDate!) : 'Pilih tanggal'),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: () => _pickDate(isStart: true),
-              ),
-              if (_isRange)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Tanggal Akhir'),
-                  subtitle: Text(_endDate != null ? fmt.format(_endDate!) : 'Pilih tanggal'),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: () => _pickDate(isStart: false),
-                ),
               const SizedBox(height: 8),
+              InkWell(
+                onTap: _pickDate,
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: _isRange ? 'Tanggal (Rentang)' : 'Tanggal',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    suffixIcon: const Icon(Icons.calendar_today),
+                  ),
+                  child: Text(
+                    _startDate == null
+                        ? 'Pilih tanggal${_isRange ? ' (bisa rentang)' : ''}'
+                        : _isRange
+                        ? (_endDate != null
+                        ? '${fmt.format(_startDate!)} - ${fmt.format(_endDate!)}'
+                        : fmt.format(_startDate!))
+                        : fmt.format(_startDate!),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _reasonController,
                 maxLength: TextFormConfig.shortTitle,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Jenis / Alasan Libur (mis. Cuti Bersama)',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.white,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
               ),
@@ -365,11 +397,9 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
               TextFormField(
                 controller: _titleController,
                 maxLength: TextFormConfig.title,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Judul Pengumuman',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.white,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
               ),
@@ -377,12 +407,10 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
               TextFormField(
                 controller: _contentController,
                 maxLength: TextFormConfig.largeContent,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Isi Pengumuman',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   alignLabelWithHint: true,
-                  filled: true,
-                  fillColor: Colors.white,
                 ),
                 maxLines: 5,
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
@@ -412,7 +440,6 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
                     ),
                   ),
                 ),
-              const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _isSubmitting ? null : _submit,
                 child: _isSubmitting
