@@ -93,7 +93,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       });
     } catch (err) {
       if (!mounted) return;
-      showErrorSnackBar(context, "Gagal mengambil data absensi");
+      showFloatingErrorSnackbar(context, "Gagal mengambil data absensi");
     }
   }
 
@@ -161,7 +161,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     }
 
     if (permission == LocationPermission.denied) {
-      showErrorSnackBar(context, "Izin lokasi ditolak, coba lagi");
+      showFloatingErrorSnackbar(context, "Izin lokasi ditolak, coba lagi");
       return null;
     }
 
@@ -184,7 +184,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       return position;
     } catch (_) {
       if (!mounted) return null;
-      showErrorSnackBar(context, "Gagal mendapatkan lokasi, coba lagi");
+      showFloatingErrorSnackbar(context, "Gagal mendapatkan lokasi, coba lagi");
       return null;
     }
   }
@@ -253,7 +253,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             onPressed: () {
               final reason = reasonController.text.trim();
               if (reason.isEmpty) {
-                showErrorSnackBar(context, "Alasan harus diisi");
+                showFloatingErrorSnackbar(context, "Alasan harus diisi");
                 return;
               }
               Navigator.pop(context, reason);
@@ -396,7 +396,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       setState(() => isWithinOffice = withinOffice);
 
       if (!withinOffice) {
-        showErrorSnackBar(context, "Anda berada di luar radius kantor");
+        showFloatingErrorSnackbar(context, "Anda berada di luar radius kantor");
         return;
       }
 
@@ -408,7 +408,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       if (!mounted) return;
 
       if (selfieToSend == null) {
-        showErrorSnackBar(context, "Selfie dibatalkan");
+        showFloatingErrorSnackbar(context, "Selfie dibatalkan");
         return;
       }
 
@@ -450,7 +450,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             clockInTime = DateTime.parse(res.data["clockIn"]).toLocal();
             status = res.data["status"];
           });
-          showSuccessSnackBar(context, "Clock in berhasil");
+          showFloatingSuccessSnackbar(context, "Clock in berhasil");
         } else {
           final res = await DioClient.dio.post("/attendance/clock-out", data: formData);
           if (!mounted) return;
@@ -458,13 +458,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             clockOutTime = DateTime.parse(res.data["clockOut"]).toLocal();
             status = res.data["status"] ?? "HADIR";
           });
-          showSuccessSnackBar(context, "Clock out berhasil");
+          showFloatingSuccessSnackbar(context, "Clock out berhasil");
         }
       } on DioException catch (e) {
         if (!mounted) return;
         final data = e.response?.data;
         final message = data?["message"] ?? data?["error"] ?? "Terjadi kesalahan";
-        showErrorSnackBar(context, message);
+        showFloatingErrorSnackbar(context, message);
       }
     } finally {
       if (mounted) {

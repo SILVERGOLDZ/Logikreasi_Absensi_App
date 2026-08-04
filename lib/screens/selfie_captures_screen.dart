@@ -169,7 +169,7 @@ class _SelfieCaptureScreenState extends State<SelfieCaptureScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() => _isBusy = false);
-      showErrorSnackBar(context, "Gagal mengambil foto");
+      showFloatingErrorSnackbar(context, "Gagal mengambil foto");
     }
   }
 

@@ -48,12 +48,12 @@ class _ManualAttendanceBodyState extends State<_ManualAttendanceBody> {
     final success = await controller.submit();
     if (!mounted) return;
     if (success) {
-      showSuccessSnackBar(
+      showFloatingSuccessSnackbar(
         context,
         controller.action == ManualAction.clockIn ? 'Clock in manual berhasil' : 'Clock out manual berhasil',
       );
     } else {
-      showErrorSnackBar(context, controller.errorMessage ?? 'Gagal memproses');
+      showFloatingErrorSnackbar(context, controller.errorMessage ?? 'Gagal memproses');
     }
   }
 

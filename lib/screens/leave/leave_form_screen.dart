@@ -1,5 +1,6 @@
 // import 'dart:io';
 import 'package:absensi_app/config/text_form_config.dart';
+import 'package:absensi_app/widgets/snackbar.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -41,6 +42,10 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
   List<int> _selectedApproverIds = [];
   // List<File> _attachments = [];
   List<PlatformFile> _attachments = [];
+
+  bool _formError = false;
+  String _formMessage = '';
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -79,13 +84,25 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
   }
 
   Future<void> _submit(LeaveController controller) async {
+
+    _formError = false;
+
     if (!_formKey.currentState!.validate()) return;
     if (_selectedRange == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih tanggal cuti')));
+      setState(() {
+        _formError = true;
+        _formMessage = "Pilih tanggal cuti";
+      });
+      // showFloatingErrorSnackbar(context, "Pilih tanggal cuti");
       return;
     }
     if (_selectedApproverIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih minimal 1 approver')));
+      setState(() {
+        _formError = true;
+        _formMessage = "Pilih minimal 1 approver";
+      });
+
+      // showFloatingErrorSnackbar(context, "Pilih minimal 1 approver");
       return;
     }
 
@@ -101,10 +118,10 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
 
     if (!mounted) return;
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pengajuan berhasil dikirim')));
+      showFloatingSuccessSnackbar(context, "Pengajuan berhasil dikirim");
       context.pop(true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(controller.errorMessage ?? 'Gagal mengajukan')));
+      showFloatingErrorSnackbar(context, "Gagal mengajukan");
     }
   }
 
@@ -271,6 +288,8 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
                 onChanged: (ids) => setState(() => _selectedApproverIds = ids),
               ),
               const SizedBox(height: 24),
+              if(_formError)
+                AppErrorInlineFeedback(_formMessage),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

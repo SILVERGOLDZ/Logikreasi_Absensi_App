@@ -46,7 +46,7 @@ class _HolidayManagementScreenState extends State<HolidayManagementScreen> {
       );
       setState(() => _holidays = data);
     } catch (e) {
-      if (mounted) showErrorSnackBar(context, 'Gagal memuat data hari libur');
+      if (mounted) showFloatingErrorSnackbar(context, 'Gagal memuat data hari libur');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -75,10 +75,10 @@ class _HolidayManagementScreenState extends State<HolidayManagementScreen> {
 
     try {
       await HolidayApi.cancel(id);
-      if (mounted) showSuccessSnackBar(context, 'Hari libur dibatalkan');
+      if (mounted) showFloatingSuccessSnackbar(context, 'Hari libur dibatalkan');
       _loadHolidays();
     } catch (e) {
-      if (mounted) showErrorSnackBar(context, 'Gagal membatalkan');
+      if (mounted) showFloatingErrorSnackbar(context, 'Gagal membatalkan');
     }
   }
 
@@ -324,7 +324,7 @@ class _HolidayFormSheetState extends State<_HolidayFormSheet> {
         debugPrint("STATUS: ${e.response?.statusCode}");
         debugPrint("DATA: ${e.response?.data}");
       }
-      if (mounted) showErrorSnackBar(context, 'Gagal menyimpan hari libur');
+      if (mounted) showFloatingErrorSnackbar(context, 'Gagal menyimpan hari libur');
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

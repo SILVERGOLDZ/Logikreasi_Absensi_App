@@ -1,3 +1,4 @@
+import 'package:absensi_app/widgets/snackbar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -78,9 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _imageFile = selectedImage;
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Foto berhasil diupdate')),
-          );
+          showFloatingSuccessSnackbar(context, "Berhasil Update Foto");
         }
       }
     } catch (e) {
@@ -93,7 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
+    showFloatingErrorSnackbar(context, msg);
   }
 
   Future<void> _logout() async {

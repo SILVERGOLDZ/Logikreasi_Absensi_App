@@ -1,4 +1,5 @@
 import 'package:absensi_app/config/text_form_config.dart';
+import 'package:absensi_app/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:absensi_app/utils/title_case_helper.dart';
@@ -37,12 +38,12 @@ class _CreatePengumumanScreenState extends State<CreatePengumumanScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Pengumuman berhasil dibuat")));
+        showFloatingSuccessSnackbar(context, "Pengumuman berhasil dibuat");
         Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal membuat pengumuman")));
+        showFloatingErrorSnackbar(context, "Gagal membuat pengumuman");
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

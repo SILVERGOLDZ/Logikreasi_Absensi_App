@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:absensi_app/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../widgets/app_scaffold.dart';
@@ -105,7 +106,7 @@ class _CategoryAttachmentListState extends State<_CategoryAttachmentList> {
       _loadFiles();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menghapus file')));
+      showFloatingErrorSnackbar(context, "Gagal menghapus file");
     }
   }
 
@@ -155,7 +156,7 @@ class _CategoryAttachmentListState extends State<_CategoryAttachmentList> {
       _loadFiles();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menghapus file')));
+      showFloatingErrorSnackbar(context, "Gagal menghapus file");
     }
   }
 

@@ -1,3 +1,4 @@
+import 'package:absensi_app/widgets/snackbar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
@@ -46,9 +47,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       });
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password berhasil diubah')),
-      );
+      showFloatingSuccessSnackbar(context, "Password berhasil diubah");
       Navigator.of(context).pop(true);
     } on DioException catch (e) {
       final message = e.response?.data?['error'] ?? 'Gagal mengubah password';
