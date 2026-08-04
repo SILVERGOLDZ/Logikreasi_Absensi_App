@@ -152,14 +152,143 @@ class _BannerWidgetState extends State<_BannerWidget>
   }
 }
 
-void showErrorSnackBar(BuildContext context, String message) {
+void showFloatingErrorSnackbar(BuildContext context, String message) {
   AppBanner.show(context, message: message, type: BannerType.error);
 }
 
-void showSuccessSnackBar(BuildContext context, String message) {
+void showFloatingSuccessSnackbar(BuildContext context, String message) {
   AppBanner.show(context, message: message, type: BannerType.success);
 }
 
-void showWarningSnackBar(BuildContext context, String message) {
+void showFloatingWarningSnackbar(BuildContext context, String message) {
   AppBanner.show(context, message: message, type: BannerType.warning);
+}
+
+void showFloatingInfoSnackbar(BuildContext context, String message) {
+  AppBanner.show(context, message: message, type: BannerType.info);
+}
+
+/// Widget feedback inline (non-floating) yang bisa dipasang langsung
+/// di dalam layout page, mis. di atas form sebelum tombol submit.
+///
+/// Contoh pemakaian:
+/// ```dart
+/// if (_errorMessage != null) ...[
+///   AppInlineFeedback(_errorMessage!, type: BannerType.error),
+///   const SizedBox(height: 16),
+/// ],
+/// ```
+class AppInlineFeedback extends StatelessWidget {
+  final String message;
+  final BannerType type;
+
+  const AppInlineFeedback(
+      this.message, {
+        super.key,
+        this.type = BannerType.error,
+      });
+
+  ({Color background, Color border, Color text}) _styleFor(BannerType type) {
+    switch (type) {
+      case BannerType.error:
+        return (
+        background: Colors.red.shade50,
+        border: Colors.red.shade200,
+        text: Colors.red.shade700,
+        );
+      case BannerType.warning:
+        return (
+        background: Colors.orange.shade50,
+        border: Colors.orange.shade200,
+        text: Colors.orange.shade700,
+        );
+      case BannerType.success:
+        return (
+        background: Colors.green.shade50,
+        border: Colors.green.shade200,
+        text: Colors.green.shade700,
+        );
+      case BannerType.info:
+        return (
+        background: Colors.blueGrey.shade50,
+        border: Colors.blueGrey.shade200,
+        text: Colors.blueGrey.shade700,
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final style = _styleFor(type);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: style.background,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: style.border),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(color: style.text, fontSize: 13),
+      ),
+    );
+  }
+}
+
+/// Varian inline feedback bertipe error.
+///
+/// Contoh pemakaian:
+/// ```dart
+/// if (_errorMessage != null) ...[
+///   AppErrorInlineFeedback(_errorMessage!),
+///   const SizedBox(height: 16),
+/// ],
+/// ```
+class AppErrorInlineFeedback extends StatelessWidget {
+  final String message;
+
+  const AppErrorInlineFeedback(this.message, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppInlineFeedback(message, type: BannerType.error);
+  }
+}
+
+/// Varian inline feedback bertipe warning.
+class AppWarningInlineFeedback extends StatelessWidget {
+  final String message;
+
+  const AppWarningInlineFeedback(this.message, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppInlineFeedback(message, type: BannerType.warning);
+  }
+}
+
+/// Varian inline feedback bertipe success.
+class AppSuccessInlineFeedback extends StatelessWidget {
+  final String message;
+
+  const AppSuccessInlineFeedback(this.message, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppInlineFeedback(message, type: BannerType.success);
+  }
+}
+
+/// Varian inline feedback bertipe info.
+class AppInfoInlineFeedback extends StatelessWidget {
+  final String message;
+
+  const AppInfoInlineFeedback(this.message, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppInlineFeedback(message, type: BannerType.info);
+  }
 }

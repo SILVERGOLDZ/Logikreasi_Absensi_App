@@ -1,9 +1,9 @@
+import 'package:absensi_app/widgets/snackbar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../services/api.dart';
-import '../../widgets/app_scaffold.dart';
 
 // ── Design tokens ────────────────────────────────────────────────
 const _ink = Color(0xFF10172A);
@@ -145,9 +145,7 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
                     tooltip: 'Salin password',
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: password));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Password disalin')),
-                      );
+                      showFloatingSuccessSnackbar(context, "Password disalin");
                     },
                   ),
                 ],

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:absensi_app/config/text_form_config.dart';
+import 'package:absensi_app/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -74,9 +75,7 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
       } catch (e) {
         debugPrint('Open attachment (web) error: $e');
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal membuka lampiran')),
-        );
+        showFloatingErrorSnackbar(context, "Gagal membuka lampiran");
       }
       return;
     }
@@ -122,9 +121,7 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
       debugPrint('Download error: $e');
       if (!mounted) return;
       Navigator.of(context, rootNavigator: true).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal mengunduh lampiran')),
-      );
+      showFloatingErrorSnackbar(context, "Gagal mengunduh lampiran");
     }
   }
 
@@ -173,7 +170,7 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
     if (success) {
       context.pop();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal memproses, coba lagi')));
+      showFloatingErrorSnackbar(context, "Gagal memproses, coba lagi");
     }
   }
 

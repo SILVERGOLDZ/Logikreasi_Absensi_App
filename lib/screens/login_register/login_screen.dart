@@ -1,3 +1,4 @@
+import 'package:absensi_app/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -60,9 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: Colors.red)
-    );
+    showFloatingErrorSnackbar(context, msg);
   }
 
   @override

@@ -1,5 +1,6 @@
 // import 'dart:io';
 import 'package:absensi_app/config/text_form_config.dart';
+import 'package:absensi_app/widgets/snackbar.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -47,6 +48,9 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
   List<int> _selectedApproverIds = [];
   // List<File> _attachments = [];
   List<PlatformFile> _attachments = [];
+
+  bool _formError = false;
+  String _formMessage = '';
 
   @override
   void dispose() {
@@ -122,19 +126,35 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_isRange && _dateRange == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih rentang tanggal')));
+      setState(() {
+        _formError = true;
+        _formMessage = "Pilih rentang tanggal";
+      });
+      // showFloatingErrorSnackbar(context, "Pilih rentang tanggal");
       return;
     }
     if (!_isRange && _singleDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih tanggal lembur')));
+      setState(() {
+        _formError = true;
+        _formMessage = "Pilih tanggal lembur";
+      });
+      // showFloatingErrorSnackbar(context, "Pilih tanggal lembur");
       return;
     }
     if (_startTime == null || _endTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih waktu mulai dan selesai')));
+      setState(() {
+        _formError = true;
+        _formMessage = "Pilih waktu mulai dan selesai";
+      });
+      // showFloatingErrorSnackbar(context, "Pilih waktu mulai dan selesai");
       return;
     }
     if (_selectedApproverIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih minimal 1 approver')));
+      setState(() {
+        _formError = true;
+        _formMessage = "Pilih minimal 1 approver";
+      });
+      // showFloatingErrorSnackbar(context, "Pilih minimal 1 approver");
       return;
     }
 
@@ -160,10 +180,10 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
 
     if (!mounted) return;
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pengajuan lembur berhasil dikirim')));
+      showFloatingSuccessSnackbar(context, "Pengajuan lembur berhasil dikirim");
       context.pop(true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(controller.errorMessage ?? 'Gagal mengajukan')));
+      showFloatingErrorSnackbar(context, "Gagal mengajukan");
     }
   }
 
@@ -249,7 +269,7 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Lampiran (PDF, opsional)', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Lampiran (PDF)', style: TextStyle(fontWeight: FontWeight.bold)),
             TextButton.icon(
               onPressed: _pickAttachment,
               icon: const Icon(Icons.attach_file, size: 18),
@@ -403,6 +423,8 @@ class _OvertimeFormBodyState extends State<_OvertimeFormBody> {
                 onChanged: (ids) => setState(() => _selectedApproverIds = ids),
               ),
               const SizedBox(height: 24),
+              if(_formError)
+                AppErrorInlineFeedback(_formMessage),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

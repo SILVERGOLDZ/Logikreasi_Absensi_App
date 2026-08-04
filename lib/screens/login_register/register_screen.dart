@@ -1,3 +1,4 @@
+import 'package:absensi_app/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -29,7 +30,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password tidak cocok')));
+      showFloatingErrorSnackbar(context, "Password tidak cocok");
       return;
     }
 
@@ -54,10 +55,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         if (mounted) context.go(AppRoutes.attendance);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Registrasi gagal: ${response.body}')));
+        showFloatingErrorSnackbar(context, "Registrasi gagal: ${response.body}");
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Koneksi error')));
+      showFloatingErrorSnackbar(context, "Koneksi error");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
