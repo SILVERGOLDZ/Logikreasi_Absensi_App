@@ -1,11 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../models/approver_model.dart';
 import '../models/overtime_model.dart';
 import '../services/api.dart';
+
+// Web
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:file_picker/file_picker.dart';
 
 class OvertimeController extends ChangeNotifier {
   List<ApproverModel> approvers = [];
@@ -61,7 +64,7 @@ class OvertimeController extends ChangeNotifier {
     required String reason,
     required String compensationType,
     required List<int> approverIds,
-    List<File> attachments = const [],
+    List<PlatformFile> attachments = const [],
   }) async {
     isSubmitting = true;
     errorMessage = null;
@@ -79,7 +82,12 @@ class OvertimeController extends ChangeNotifier {
         'compensationType': compensationType,
         'approverIds': jsonEncode(approverIds),
         'attachments': await Future.wait(
-          attachments.map((f) => MultipartFile.fromFile(f.path)),
+          attachments.map((f) async {
+            if (kIsWeb) {
+              return MultipartFile.fromBytes(f.bytes!, filename: f.name);
+            }
+            return MultipartFile.fromFile(f.path!, filename: f.name);
+          }),
         ),
       });
 
