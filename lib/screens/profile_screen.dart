@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -167,9 +168,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => openAppSettings(),
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.picture_as_pdf), title: const Text('Hapus pdf tersimpan'), trailing: const Icon(Icons.chevron_right), onTap: () {context.push('/settings/downloaded');},
-                    ),
+                    if(!kIsWeb)
+                      ListTile(
+                        leading: const Icon(Icons.picture_as_pdf), title: const Text('Hapus pdf tersimpan'), trailing: const Icon(Icons.chevron_right), onTap: () {context.push('/settings/downloaded');},
+                      ),
                     ListTile(leading: const Icon(Icons.info), title: const Text('Tentang Aplikasi'), trailing: const Icon(Icons.chevron_right), onTap: () {}),
                   ],
                 ),

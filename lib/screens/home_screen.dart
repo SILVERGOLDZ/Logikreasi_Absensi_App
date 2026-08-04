@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -183,7 +184,10 @@ class _MenuGrid extends StatelessWidget {
             ],
             _MenuItem(icon: Icons.format_list_bulleted, label: 'Permintaan\nTugas', color: Colors.grey.shade300, screenWidth: screenWidth),
             _MenuItem(icon: Icons.add_alert, label: 'Berita', color: Colors.blue, screenWidth: screenWidth, onTap: () => context.push('/announcement')),
-            _MenuItem(icon: Icons.download, label: 'Downloads', color: Colors.blueGrey, screenWidth: screenWidth, onTap: () => context.push('/settings/downloaded')),
+
+            if(!kIsWeb)
+              _MenuItem(icon: Icons.download, label: 'Downloads', color: Colors.blueGrey, screenWidth: screenWidth, onTap: () => context.push('/settings/downloaded')),
+
             _MenuItem(icon: Icons.more_horiz, label: 'Permintaan\nLainnya', color:Colors.grey.shade300, screenWidth: screenWidth),
           ],
         ),
