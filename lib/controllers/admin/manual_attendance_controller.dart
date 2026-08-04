@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../../models/approver_model.dart';
 import '../../services/api.dart';
 
-enum ManualAction { clockIn, clockOut }
+enum ManualAction { clockIn, clockOut, done }
 
 const List<String> attendanceStatusOptions = [
   'HADIR', 'TERLAMBAT', 'ABSEN', 'SAKIT',
@@ -17,6 +17,7 @@ class ManualAttendanceController extends ChangeNotifier {
   ManualAction action = ManualAction.clockIn;
   String status = 'HADIR';
   String reason = '';
+  String employeeAttendanceStatus = '';
 
   bool isCheckingStatus = false;
   bool isSubmitting = false;
@@ -27,6 +28,7 @@ class ManualAttendanceController extends ChangeNotifier {
 
   bool get canClockIn => !_hasClockIn;
   bool get canClockOut => _hasClockIn && !_hasClockOut;
+  bool get done => _hasClockIn && _hasClockOut;
 
   String get formattedDate => DateFormat('yyyy-MM-dd').format(selectedDate);
 
@@ -69,11 +71,14 @@ class ManualAttendanceController extends ChangeNotifier {
       final data = response.data;
       _hasClockIn = data != null && data['clockIn'] != null;
       _hasClockOut = data != null && data['clockOut'] != null;
+      employeeAttendanceStatus = data['status'];
 
       if (_hasClockIn && !_hasClockOut) {
         action = ManualAction.clockOut;
       } else if (!_hasClockIn) {
         action = ManualAction.clockIn;
+      } else if (_hasClockIn && _hasClockOut) {
+        action = ManualAction.done;
       }
     } catch (e) {
       _hasClockIn = false;

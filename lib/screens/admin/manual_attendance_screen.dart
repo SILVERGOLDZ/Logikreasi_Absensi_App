@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -28,8 +31,46 @@ class _ManualAttendanceBody extends StatefulWidget {
 class _ManualAttendanceBodyState extends State<_ManualAttendanceBody> {
   final _reasonController = TextEditingController();
 
+  late final ManualAttendanceController _controller;
+  Timer? _timer;
+  DateTime _currentTime = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = context.read<ManualAttendanceController>();
+    _controller.addListener(_syncLiveClock);
+    _syncLiveClock(); // cek state awal, jaga-jaga kalau default action = clockOut
+  }
+
+  void _syncLiveClock() {
+    if (_controller.action == ManualAction.clockOut) {
+      _startLiveClock();
+    } else {
+      _stopLiveClock();
+    }
+  }
+
+  void _startLiveClock() {
+    if (_timer != null) return; // sudah jalan, jangan buat timer baru
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() => _currentTime = DateTime.now());
+    });
+  }
+
+  void _stopLiveClock() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
   @override
   void dispose() {
+    _stopLiveClock();
+    _controller.removeListener(_syncLiveClock);
     _reasonController.dispose();
     super.dispose();
   }
@@ -60,6 +101,8 @@ class _ManualAttendanceBodyState extends State<_ManualAttendanceBody> {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<ManualAttendanceController>();
+    final formattedTime = DateFormat('HH:mm:ss').format(_currentTime);
+
 
     return AppScaffold(
       appBar: AppBar(title: const Text('Presensi Manual')),
@@ -114,11 +157,15 @@ class _ManualAttendanceBodyState extends State<_ManualAttendanceBody> {
                 selected: {controller.action},
                 onSelectionChanged: (s) => controller.setAction(s.first),
               ),
+              if (controller.employeeAttendanceStatus == "CUTI") ...[
+                SizedBox(height: 24,),
+                AppErrorInlineFeedback("Karyawan berstatus CUTI pada tanggal tersebut.\nApa kamu yakin ingin mengubah status karyawan?"),
+              ],
               if (!controller.canClockIn && !controller.canClockOut)
                 const Padding(
                   padding: EdgeInsets.only(top: 8),
                   child: Text(
-                    'Karyawan sudah clock in & clock out pada tanggal ini',
+                    'Karyawan sudah clock in & clock out pada tanggal tersebut',
                     style: TextStyle(color: Colors.orange, fontSize: 12),
                   ),
                 ),
@@ -156,6 +203,34 @@ class _ManualAttendanceBodyState extends State<_ManualAttendanceBody> {
                 ),
                 const SizedBox(height: 16),
               ],
+
+              if(controller.action == ManualAction.clockOut) ...[
+                Column(
+                  children: [
+                    Text("Anda akan melakukan Clock Out manual karyawan di jam berikut:", style: TextStyle(color: Colors.redAccent),),
+                    SizedBox(height: 24,),
+                    Center(
+                      child: Container(
+                        width: double.infinity,
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          formattedTime,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 48,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
+              const SizedBox(height: 24,),
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
