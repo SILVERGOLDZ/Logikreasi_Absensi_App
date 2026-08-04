@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../models/approver_model.dart';
 import '../models/leave_model.dart';
 import '../services/api.dart';
 import '../services/socket_service.dart';
+
+// WEB
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:file_picker/file_picker.dart';
 
 class LeaveController extends ChangeNotifier {
   List<ApproverModel> approvers = [];
@@ -56,7 +59,7 @@ class LeaveController extends ChangeNotifier {
     required String type,
     required String reason,
     required List<int> approverIds,
-    List<File> attachments = const [],
+    List<PlatformFile> attachments = const [],
   }) async {
     isSubmitting = true;
     errorMessage = null;
@@ -70,12 +73,12 @@ class LeaveController extends ChangeNotifier {
         'reason': reason,
         'approverIds': jsonEncode(approverIds),
         'attachments': await Future.wait(
-          attachments.map(
-                (file) => MultipartFile.fromFile(
-              file.path,
-              filename: file.path.split('/').last,
-            ),
-          ),
+          attachments.map((f) async {
+            if (kIsWeb) {
+              return MultipartFile.fromBytes(f.bytes!, filename: f.name);
+            }
+            return MultipartFile.fromFile(f.path!, filename: f.name);
+          }),
         ),
       });
 

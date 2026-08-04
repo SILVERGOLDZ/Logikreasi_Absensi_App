@@ -8,9 +8,13 @@ import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../models/overtime_model.dart';
-import '../../services/api.dart'; // TODO: sesuaikan, harus expose DioClient.dio
+import '../../services/api.dart';
 import '../../widgets/app_scaffold.dart';
 import '../../widgets/download_progress_sheet.dart';
+
+// web
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:url_launcher/url_launcher.dart';
 
 class OvertimeDetailScreen extends StatefulWidget {
   const OvertimeDetailScreen({
@@ -61,6 +65,21 @@ class _OvertimeDetailScreenState extends State<OvertimeDetailScreen> {
 
   Future<void> _openAttachment(String url) async {
     final fileName = url.split('/').last;
+
+    if (kIsWeb) {
+      try {
+        final uri = Uri.parse(url);
+        final ok = await launchUrl(uri, webOnlyWindowName: '_blank');
+        if (!ok) throw Exception('launchUrl returned false');
+      } catch (e) {
+        debugPrint('Open attachment (web) error: $e');
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal membuka lampiran')),
+        );
+      }
+      return;
+    }
 
     try {
       final dir = await getApplicationDocumentsDirectory();

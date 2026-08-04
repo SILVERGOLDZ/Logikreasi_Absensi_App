@@ -1,4 +1,4 @@
-import 'dart:io';
+// import 'dart:io';
 import 'package:absensi_app/config/text_form_config.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +9,9 @@ import 'package:provider/provider.dart';
 import '../../controllers/leave_controller.dart';
 import '../../widgets/app_scaffold.dart';
 import '../../widgets/approval_picker_field.dart';
+
+// web
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class LeaveFormScreen extends StatelessWidget {
   const LeaveFormScreen({super.key});
@@ -36,8 +39,8 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
   DateTimeRange? _selectedRange;
   String _type = 'CUTI';
   List<int> _selectedApproverIds = [];
-  List<File> _attachments = [];
-
+  // List<File> _attachments = [];
+  List<PlatformFile> _attachments = [];
   @override
   void dispose() {
     _titleController.dispose();
@@ -61,13 +64,12 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
         type: FileType.custom,
         allowedExtensions: ['pdf'],
         allowMultiple: true,
+        withData: kIsWeb, // hanya minta bytes di web; mobile cukup pakai path
       );
       if (result != null && result.files.isNotEmpty) {
         setState(() {
           _attachments.addAll(
-            result.files
-                .where((f) => f.path != null)
-                .map((f) => File(f.path!)),
+            result.files.where((f) => kIsWeb ? f.bytes != null : f.path != null),
           );
         });
       }
@@ -145,10 +147,14 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
             ),
             child: Column(
               children: _attachments.asMap().entries.map((entry) {
+                // final index = entry.key;
+                // final file = entry.value;
+                // final isLast = index == _attachments.length - 1;
+                // final sizeKb = (file.lengthSync() / 1024).toStringAsFixed(0);
                 final index = entry.key;
                 final file = entry.value;
                 final isLast = index == _attachments.length - 1;
-                final sizeKb = (file.lengthSync() / 1024).toStringAsFixed(0);
+                final sizeKb = (file.size / 1024).toStringAsFixed(0);
 
                 return Container(
                   decoration: BoxDecoration(
@@ -169,7 +175,7 @@ class _LeaveFormBodyState extends State<_LeaveFormBody> {
                       child: Icon(Icons.picture_as_pdf, color: Colors.red.shade400, size: 20),
                     ),
                     title: Text(
-                      file.path.split('/').last,
+                      file.name,
                       style: const TextStyle(fontSize: 13),
                       overflow: TextOverflow.ellipsis,
                     ),
