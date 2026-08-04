@@ -83,6 +83,8 @@ class ManualAttendanceController extends ChangeNotifier {
     } catch (e) {
       _hasClockIn = false;
       _hasClockOut = false;
+      employeeAttendanceStatus = '';
+      action = ManualAction.clockIn;
     } finally {
       isCheckingStatus = false;
       notifyListeners();
