@@ -41,12 +41,13 @@ void main() async {
   await initializeDateFormatting();
 
   final authService = AuthService();
-  await authService.loadFromStorage();
 
   //connect api
   DioClient.init(authService);
   //connect socket
   SocketService.instance.connect();
+
+  await authService.loadFromStorage();
 
   if (authService.isAuthenticated) {
     NotificationService().init();

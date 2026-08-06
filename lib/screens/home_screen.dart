@@ -15,10 +15,14 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
+    return ChangeNotifierProxyProvider<AuthService, HomeController>(
       create: (context) => HomeController(
-        isAdmin: Provider.of<AuthService>(context, listen: false).role == 'admin',
+        isAdmin: Provider.of<AuthService>(context, listen: false).isApprover,
       )..init(),
+      update: (context, auth, controller) {
+        controller!.setIsAdmin(auth.isApprover);
+        return controller;
+      },
       child: const _HomeView(),
     );
   }
@@ -71,9 +75,9 @@ class _HomeViewState extends State<_HomeView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              _MenuGrid(screenWidth: screenWidth, isAdmin: auth.role == 'admin'),
+              _MenuGrid(screenWidth: screenWidth, isAdmin: auth.isApprover),
               const SizedBox(height: 24),
-              if (auth.role == 'admin')
+              if (auth.isApprover)
                 ...adminSections.map((title) => Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: _SectionHeader(

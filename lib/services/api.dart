@@ -1,5 +1,6 @@
 import 'package:absensi_app/config/app_config.dart';
 import 'package:absensi_app/services/auth/auth_service.dart';
+import 'package:absensi_app/widgets/no_internet_dialog.dart';
 import 'package:dio/dio.dart';
 
 class DioClient {
@@ -24,8 +25,25 @@ class DioClient {
           handler.next(options);
         },
         onResponse: (response, handler) => handler.next(response),
-        onError: (error, handler) => handler.next(error),
+        onError: (error, handler) {
+          if (_isConnectionError(error)) {
+            showNoInternetDialog();
+          }
+          handler.next(error);
+        },
       ),
     );
+  }
+
+  static bool _isConnectionError(DioException error) {
+    switch (error.type) {
+      case DioExceptionType.connectionError:
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.sendTimeout:
+        return true;
+      default:
+        return false;
+    }
   }
 }

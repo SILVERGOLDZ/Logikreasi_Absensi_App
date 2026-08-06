@@ -6,15 +6,16 @@ import '../services/api.dart';
 import '../services/socket_service.dart';
 
 class HomeController extends ChangeNotifier {
-  HomeController({this.isAdmin = false}) {
+  HomeController({bool isAdmin = false}) : _isAdmin = isAdmin {
     _subscribeToSocket();
-    if (isAdmin) {
+    if (_isAdmin) {
       _subscribeToLeaveSocket();
       _subscribeToOvertimeSocket();
     }
   }
 
-  final bool isAdmin;
+  bool _isAdmin;
+  bool get isAdmin => _isAdmin;
 
   List<Map<String, dynamic>> workingUsers = [];
   int pendingLeaveCount = 0;
@@ -22,15 +23,38 @@ class HomeController extends ChangeNotifier {
 
   StreamSubscription? _attendanceSub;
   StreamSubscription? _leaveSub;
+  StreamSubscription? _overtimeSub;
 
   Future<void> init() async {
     await Future.wait([
       loadWorkingUsers(),
-      if (isAdmin) ...[
+      if (_isAdmin) ...[
         loadPendingLeaveCount(),
         loadPendingOvertimeCount(),
       ]
     ]);
+  }
+
+  void setIsAdmin(bool value) {
+    if (value == _isAdmin) return;
+
+    _isAdmin = value;
+
+    if (_isAdmin) {
+      _subscribeToLeaveSocket();
+      _subscribeToOvertimeSocket();
+      loadPendingLeaveCount();
+      loadPendingOvertimeCount();
+    } else {
+      _leaveSub?.cancel();
+      _leaveSub = null;
+      _overtimeSub?.cancel();
+      _overtimeSub = null;
+      pendingLeaveCount = 0;
+      pendingOvertimeCount = 0;
+    }
+
+    notifyListeners();
   }
 
   void _subscribeToSocket() {
@@ -48,8 +72,16 @@ class HomeController extends ChangeNotifier {
   }
 
   void _subscribeToLeaveSocket() {
+    if (_leaveSub != null) return;
     _leaveSub = SocketService.instance.on('leaveStatusChanged').listen((_) {
       loadPendingLeaveCount();
+    });
+  }
+
+  void _subscribeToOvertimeSocket() {
+    if (_overtimeSub != null) return;
+    _overtimeSub = SocketService.instance.on('overtimeStatusChanged').listen((_) {
+      loadPendingOvertimeCount();
     });
   }
 
@@ -78,12 +110,6 @@ class HomeController extends ChangeNotifier {
     }
   }
 
-  void _subscribeToOvertimeSocket() {
-    _leaveSub = SocketService.instance.on('overtimeStatusChanged').listen((_) {
-      loadPendingOvertimeCount();
-    });
-  }
-
   Future<void> loadPendingOvertimeCount() async {
     try {
       final response = await DioClient.dio.get(
@@ -93,7 +119,7 @@ class HomeController extends ChangeNotifier {
       pendingOvertimeCount = response.data['total'] as int;
       notifyListeners();
     } catch (e) {
-      debugPrint('Gagal load pending leave count: $e');
+      debugPrint('Gagal load pending overtime count: $e');
     }
   }
 
@@ -101,6 +127,7 @@ class HomeController extends ChangeNotifier {
   void dispose() {
     _attendanceSub?.cancel();
     _leaveSub?.cancel();
+    _overtimeSub?.cancel();
     super.dispose();
   }
 }
