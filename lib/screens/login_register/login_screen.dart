@@ -76,7 +76,10 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.flutter_dash, size: 80, color: Colors.blue),
+                  Image.asset(
+                    'assets/images/LKU_B2B_Vertical_Gradient.png',
+                    width: 200,
+                  ),
                   const SizedBox(height: 24),
                   Text('Masuk', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 32),

@@ -31,11 +31,29 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
   bool _isSubmitting = false;
   String? _errorMessage;
 
+  List<String> _availableRoles = ['admin', 'user'];
+  bool _loadingRoles = true;
+
   @override
   void initState() {
     super.initState();
     _usernameController.addListener(_onPreviewChanged);
     _emailController.addListener(_onPreviewChanged);
+    _fetchRoles();
+  }
+
+  Future<void> _fetchRoles() async {
+    try {
+      final res = await DioClient.dio.get('/admin/user/roles');
+      final roles = List<String>.from(res.data['roles'] ?? []);
+      if (roles.isNotEmpty && mounted) {
+        setState(() => _availableRoles = roles);
+      }
+    } catch (_) {
+      // biarkan fallback default ['admin', 'user'] kalau gagal fetch
+    } finally {
+      if (mounted) setState(() => _loadingRoles = false);
+    }
   }
 
   void _onPreviewChanged() => setState(() {});
@@ -78,6 +96,9 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
 
       _usernameController.clear();
       _emailController.clear();
+      if (!_availableRoles.contains(_role)) {
+        _availableRoles = [..._availableRoles, _role]..sort();
+      }
       setState(() => _role = 'user');
 
       await _showGeneratedPasswordDialog(username, generatedPassword);
@@ -206,8 +227,14 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        shape: const Border(),
+        iconTheme: const IconThemeData(
+          color: Colors.white30,
+        ),
         title: const Text('Tambah User Baru'),
-        backgroundColor: _paper,
+        titleTextStyle: TextStyle(color: Colors.white),
+        centerTitle: true,
+        backgroundColor: _ink,
         foregroundColor: _textDark,
         elevation: 0,
       ),
@@ -449,7 +476,7 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                        : const Text('Buat User', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                        : const Text('Daftarkan Pengguna', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -457,6 +484,7 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
                   'Password sementara akan digenerate otomatis dan hanya ditampilkan satu kali setelah user berhasil dibuat.',
                   style: TextStyle(color: _muted, fontSize: 12.5, height: 1.4),
                 ),
+                const SizedBox(height: 220),
               ],
             ),
           ),
@@ -497,44 +525,81 @@ class _RegisterUserScreenState extends State<RegisterUserScreen> {
   }
 
   Widget _buildRoleSelector() {
-    final roles = [
-      {'value': 'user', 'label': 'User', 'icon': Icons.person_outline},
-      {'value': 'admin', 'label': 'Admin', 'icon': Icons.shield_outlined},
-    ];
+    return Autocomplete<String>(
+      initialValue: TextEditingValue(text: _role),
+      optionsBuilder: (TextEditingValue value) {
+        if (value.text.isEmpty) return _availableRoles;
+        return _availableRoles.where(
+              (r) => r.toLowerCase().contains(value.text.toLowerCase()),
+        );
+      },
+      onSelected: (value) => setState(() => _role = value),
+      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+        // auto-scroll field ini ke atas saat difokus, biar dropdown dapat ruang
+        focusNode.addListener(() {
+          if (focusNode.hasFocus) {
+            Future.delayed(const Duration(milliseconds: 250), () {
+              if (focusNode.context != null) {
+                Scrollable.ensureVisible(
+                  focusNode.context!,
+                  alignment: 0.1, // field akan digeser mendekati bagian atas viewport
+                  duration: const Duration(milliseconds: 250),
+                );
+              }
+            });
+          }
+        });
 
-    return Row(
-      children: roles.map((r) {
-        final isSelected = _role == r['value'];
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(right: r['value'] == 'user' ? 12 : 0),
-            child: InkWell(
-              onTap: () => setState(() => _role = r['value'] as String),
-              borderRadius: BorderRadius.circular(12),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  color: isSelected ? _ink : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: isSelected ? _ink : _border),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(r['icon'] as IconData, size: 18, color: isSelected ? Colors.white : _muted),
-                    const SizedBox(width: 8),
-                    Text(
-                      r['label'] as String,
-                      style: TextStyle(color: isSelected ? Colors.white : _textDark, fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                  ],
-                ),
+        return TextFormField(
+          controller: controller,
+          focusNode: focusNode,
+          style: const TextStyle(color: _textDark, fontSize: 15),
+          decoration: InputDecoration(
+            hintText: _loadingRoles ? 'Memuat role...' : 'Pilih atau ketik role baru',
+            hintStyle: TextStyle(color: _muted.withOpacity(0.7)),
+            prefixIcon: const Icon(Icons.shield_outlined, size: 20, color: _muted),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _border)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _border)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _teal, width: 1.5)),
+          ),
+          onChanged: (v) => setState(() => _role = v.trim().toLowerCase()),
+          validator: (v) {
+            if (v == null || v.trim().isEmpty) return 'Role wajib diisi';
+            if (!RegExp(r'^[a-z_]+$').hasMatch(v.trim().toLowerCase())) {
+              return 'Role hanya huruf kecil, tanpa spasi';
+            }
+            return null;
+          },
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(12),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 200, maxWidth: 520),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final option = options.elementAt(index);
+                  return ListTile(
+                    dense: true,
+                    title: Text(option),
+                    onTap: () => onSelected(option),
+                  );
+                },
               ),
             ),
           ),
         );
-      }).toList(),
+      },
     );
   }
 }
