@@ -13,7 +13,7 @@
         android:required="true" />
 
     <application
-        android:label="Absensi Logi"
+        android:label="Attendance"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true">
