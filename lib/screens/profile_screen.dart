@@ -108,7 +108,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return AppScaffold(
       appBar: AppBar(
-        title: const Text('Profil Saya'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/Logo_LGradient.png',
+              width: 32,
+            ),
+            const SizedBox(width: 8),
+            const Text('Profil Saya'),
+          ],
+        ),
         actions: [IconButton(icon: const Icon(Icons.logout), onPressed: _logout)],
       ),
       body: SingleChildScrollView(

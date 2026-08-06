@@ -493,7 +493,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     return AppScaffold(
       appBar: AppBar(
-        title: Text("${auth.username}"),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/Logo_LGradient.png',
+              width: 32,
+            ),
+            const SizedBox(width: 8),
+            Text(auth.username ?? 'User'),
+          ],
+        ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
@@ -538,7 +548,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     style: const TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Color(0xff29ad7a),
                     ),
                   ),
                 ),
